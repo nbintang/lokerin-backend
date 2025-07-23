@@ -1,94 +1,59 @@
-import { PrismaClient, RoleType } from '@prisma/client';
-import * as argon2 from 'argon2';
+import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+
 const prisma = new PrismaClient();
 
 async function main() {
-  // Seed Role ENUMs are already handled by enum (no need to insert to DB)
-
-  // Seed Roles table (Role model used in CV & Job)
   const roles = [
     'Frontend Developer',
     'Backend Developer',
-    'Data Analyst',
-    'Product Manager',
+    'Fullstack Developer',
+    'Mobile App Developer',
+    'Software Engineer',
   ];
 
-  for (const role of roles) {
+  // Pastikan roles tersedia di DB
+  for (const roleName of roles) {
     await prisma.role.upsert({
-      where: { name: role },
+      where: { name: roleName },
       update: {},
-      create: { name: role },
+      create: { name: roleName },
     });
   }
 
-  // Seed Admin User
-  const password = await argon2.hash('password');
-
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
-      name: 'Super Admin',
-      email: 'admin@example.com',
-      phone: '081234567890',
-      password,
-      role: RoleType.ADMINISTRATOR,
-      isVerified: true,
-      avatarUrl: 'https://example.com/avatar.jpg',
-      createdAt: new Date(),
-    },
+  const allRoles = await prisma.role.findMany({
+    where: { name: { in: roles } },
   });
 
-  // Seed Recruiter Profile
-  await prisma.recruiterProfile.upsert({
-    where: { userId: adminUser.id },
-    update: {},
-    create: {
-      userId: adminUser.id,
-      companyName: 'Example Corp',
-      position: 'HR Manager',
-      website: 'https://example.com',
-      about: 'We are hiring awesome developers!',
-      createdAt: new Date(),
-    },
-  });
+  const companies = await prisma.company.findMany();
 
-  // Seed Company
-  const company = await prisma.company.create({
-    data: {
-      name: 'Example Corp',
-      description: 'A sample tech company.',
-      website: 'https://example.com',
-      logoUrl: 'https://example.com/logo.png',
-      createdBy: adminUser.id,
-      createdAt: new Date(),
-    },
-  });
+  if (companies.length === 0) {
+    throw new Error('No companies found. Seed companies first.');
+  }
 
-  // Seed Job
-  const backendRole = await prisma.role.findFirst({
-    where: { name: 'Backend Developer' },
-  });
+  // Tambah 50 job khusus developer aplikasi
+  for (let i = 0; i < 50; i++) {
+    const randomCompany = faker.helpers.arrayElement(companies);
 
-  await prisma.job.create({
-    data: {
-      title: 'Backend Developer',
-      description: 'Build APIs and microservices.',
-      location: 'Remote',
-      salaryRange: '10M - 20M',
-      postedBy: adminUser.id,
-      roleId: backendRole!.id,
-      companyId: company.id,
-      createdAt: new Date(),
-    },
-  });
+    await prisma.job.create({
+      data: {
+        title: faker.helpers.arrayElement(roles),
+        description: faker.lorem.paragraphs(2),
+        location: faker.location.city(),
+        salaryRange: `${faker.number.int({ min: 8, max: 15 })}M - ${faker.number.int({ min: 16, max: 30 })}M`,
+        postedBy: randomCompany.createdBy,
+        roleId: faker.helpers.arrayElement(allRoles).id,
+        companyId: randomCompany.id,
+      },
+    });
+  }
 
-  console.log('🌱 Seed complete');
+  console.log('🚀 Developer job seed complete!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Error seeding developer jobs:', e);
     process.exit(1);
   })
   .finally(async () => {
