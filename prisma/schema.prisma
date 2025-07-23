@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWED
+  INTERVIEW
+  REJECTED
+  ACCEPTED
+  @@map("application_status")
+}
+
+enum RoleType {
+  MEMBER
+  ADMINISTRATOR
+  RECRUITER
+  @@map("role")
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String
+  email              String              @unique(map: "idx_users_email")
+  phone              String              @unique(map: "idx_users_phone")
+  password           String
+  role               RoleType            @default(MEMBER)
+  avatarUrl          String?             @map("avatar_url")
+  isVerified         Boolean?            @default(false) @map("is_verified")
+  createdAt          DateTime?           @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime?           @db.Timestamptz(6) @map("updated_at")
+
+  companies          Company[]           @relation("users_companies")
+  cvs                CV[]                @relation("users_cvs")
+  jobApplications    JobApplication[]    @relation("users_applications")
+  jobs               Job[]               @relation("users_posted_jobs")
+  recruiterProfile   RecruiterProfile?   @relation("users_recruiter_profile")
+
+  @@map("users")
+}
+
+model RecruiterProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique(map: "idx_recruiter_profiles_user_id") @map("user_id") @db.Uuid
+  companyName  String   @map("company_name")
+  position     String
+  website      String
+  about        String
+  createdAt    DateTime? @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  user         User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_recruiter_profile")
+
+  @@map("recruiter_profiles")
+}
+
+model Company {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  website     String
+  createdBy   String    @map("created_by") @db.Uuid
+  logoUrl     String    @map("logo_url")
+  createdAt   DateTime? @db.Timestamptz(6) @map("created_at")
+  updatedAt   DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  user        User      @relation("users_companies", fields: [createdBy], references: [id], map: "fk_users_companies")
+  jobs        Job[]
+
+  @@map("companies")
+}
+
+model Role {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String    @unique(map: "uni_roles_name")
+  createdAt  DateTime? @db.Timestamptz(6) @map("created_at")
+  updatedAt  DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  cvs        CV[]
+  jobs       Job[]
+
+  @@map("roles")
+}
+
+model CV {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  fileUrl          String    @map("file_url")
+  extracted        String
+  predictedRoleId  String    @map("predicted_role_id") @db.Uuid
+  createdAt        DateTime? @db.Timestamptz(6) @map("created_at")
+  updatedAt        DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  role             Role     @relation(fields: [predictedRoleId], references: [id], map: "fk_roles_c_vs")
+  user             User     @relation("users_cvs", fields: [userId], references: [id], map: "fk_users_c_vs")
+
+  @@map("cvs")
+}
+
+model Job {
+  id               String    @id @default(uuid()) @db.Uuid
+  companyId        String    @map("company_id") @db.Uuid
+  roleId           String    @map("role_id") @db.Uuid
+  title            String
+  description      String
+  location         String
+  salaryRange      String    @map("salary_range")
+  postedBy         String    @map("posted_by") @db.Uuid
+  createdAt        DateTime? @db.Timestamptz(6) @map("created_at")
+  updatedAt        DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  applications     JobApplication[]
+  company          Company   @relation(fields: [companyId], references: [id], map: "fk_companies_jobs")
+  role             Role      @relation(fields: [roleId], references: [id], map: "fk_roles_jobs")
+  user             User      @relation("users_posted_jobs", fields: [postedBy], references: [id], map: "fk_users_posted_jobs")
+
+  @@map("jobs")
+}
+
+model JobApplication {
+  id         String            @id @default(uuid()) @db.Uuid
+  userId     String            @map("user_id") @db.Uuid
+  jobId      String            @map("job_id") @db.Uuid
+  status     ApplicationStatus @default(APPLIED)
+  appliedAt  DateTime?         @db.Timestamptz(6) @map("applied_at")
+  updatedAt  DateTime?         @db.Timestamptz(6) @map("updated_at")
+
+  job        Job               @relation(fields: [jobId], references: [id], map: "fk_job_applications_job")
+  user       User              @relation("users_applications", fields: [userId], references: [id], map: "fk_users_applications")
+
+  @@map("job_applications")
+}
