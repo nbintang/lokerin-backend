@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { HttpService } from '@nestjs/axios';
 import { PrismaService } from 'src/common/prisma/prisma.service';
@@ -23,13 +23,10 @@ export class JobService {
     private httpService: HttpService,
   ) {}
   async recommendJobs(file: Express.Multer.File, query: QueryJobDto) {
-    const offset = query.offset ?? 0;
+    const page = query.page ?? 1;
     const limit = query.limit ?? 50;
-
-    // Dapatkan total count untuk client paging
+    const offset = (page - 1) * limit;
     const totalJobs = await this.prisma.job.count();
-
-    // Ambil hanya slice yang diminta
     const jobs = await this.prisma.job.findMany({
       skip: offset,
       take: limit,
@@ -39,8 +36,6 @@ export class JobService {
         description: true,
       },
     });
-
-    // Siapkan FormData dan kirim ke FastAPI
     const form = new FormData();
     form.append('resume', file.buffer, {
       filename: file.originalname,

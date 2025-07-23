@@ -6,7 +6,7 @@ export class QueryJobDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
-  offset?: number;
+  page?: number;
 
   @IsOptional()
   @Type(() => Number)
