@@ -10,6 +10,8 @@ import { RoleModule } from './modules/role/role.module';
 import { CvModule } from './modules/cv/cv.module';
 import { JobModule } from './modules/job/job.module';
 import { JobApplicationModule } from './modules/job-application/job-application.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { JobApplicationModule } from './modules/job-application/job-application.
     CvModule,
     JobModule,
     JobApplicationModule,
+    AuthModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

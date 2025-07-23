@@ -1,9 +1,33 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import {
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Observable, tap } from 'rxjs';
 
 @Injectable()
-export class LoggerInterceptor implements NestInterceptor {
+export class LoggingInterceptor implements NestInterceptor {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle();
+    const request = context.switchToHttp().getRequest();
+    const { method, url } = request;
+    const now = Date.now();
+
+    return next.handle().pipe(
+      tap(() => {
+        const res = context.switchToHttp().getResponse();
+        this.logger.log(
+          'info',
+          `${method} ${url} ${res.statusCode} - ${Date.now() - now}ms`,
+        );
+      }),
+    );
   }
 }

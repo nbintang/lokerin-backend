@@ -1,26 +1,98 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PrismaService } from 'src/common/prisma/prisma.service';
+import { QueryUserDto } from './dto/query-user.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private prisma: PrismaService) {}
+  createUser(createUserDto: CreateUserDto) {
+    const user = this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        phone: createUserDto.phone,
+        password: createUserDto.password,
+        avatarUrl: createUserDto.avatarUrl,
+      },
+    });
+    return user;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAllUsers(query: QueryUserDto) {
+    const offset = +(query.offset || 0);
+    const limit = +(query.limit || 10);
+    const skip = (offset - 1) * limit;
+    const take = limit;
+    const where: Prisma.UserWhereInput = {
+      ...{ name: { contains: query.name } },
+      ...{ email: { contains: query.email } },
+      ...{ role: { equals: query.role } },
+    };
+
+    const users = this.prisma.user.findMany({
+      where,
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const userCount = this.prisma.user.count({
+      where,
+    });
+
+    return {
+      users,
+      meta: {
+        offset,
+        limit,
+        total: userCount,
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findUserById(id: string) {
+    const user = this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return user;
+  }
+  findUserByEmail(email: string) {
+    const user = this.prisma.user.findUnique({
+      where: { email },
+    });
+    return user;
+  }
+  findUserByPhone(phone: string) {
+    const user = this.prisma.user.findUnique({
+      where: { phone },
+    });
+    return user;
+  }
+  updateUserById(id: string, updateUserDto: UpdateUserDto) {
+    const user = this.prisma.user.update({
+      where: { id },
+      data: { ...updateUserDto },
+    });
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  updateVerifiedById(id: string) {
+    const user = this.prisma.user.update({
+      where: { id },
+      data: { isVerified: true },
+    });
+    return user;
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  remove(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 }
