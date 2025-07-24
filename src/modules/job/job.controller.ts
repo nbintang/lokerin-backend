@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApplicantsService } from './applicants/applicants.service';
+import { ApplicantsService } from '../applicants/applicants.service';
 import { QueryJobDto } from './dto/query-job.dto';
 
 @Controller('jobs')

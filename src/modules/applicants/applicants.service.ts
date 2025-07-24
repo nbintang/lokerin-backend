@@ -1,14 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateJobDto } from '../dto/update-job.dto';
+import { UpdateJobDto } from '../job/dto/update-job.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
-import { QueryJobDto } from '../dto/query-job.dto';
+import { QueryJobDto } from '../job/dto/query-job.dto';
+import { UserRole } from '../users/enum/user.enum';
 
 @Injectable()
 export class ApplicantsService {
   constructor(private prisma: PrismaService) {}
 
   async applyJob(userId: string, jobId: string) {
-    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    const job = await this.prisma.job.findUniqueOrThrow({
+      where: { id: jobId, user: { role: UserRole.RECRUITER } },
+    });
     if (!job) throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
     return await this.prisma.jobApplication.create({ data: { userId, jobId } });
   }

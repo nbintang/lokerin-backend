@@ -15,5 +15,5 @@ export class QueryUserDto {
   email: string;
 
   @IsOptional()
-  role: UserRole;
+  role: UserRole.MEMBER | UserRole.RECRUITER;
 }

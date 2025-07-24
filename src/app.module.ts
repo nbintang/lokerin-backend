@@ -11,6 +11,7 @@ import { CvModule } from './modules/cv/cv.module';
 import { JobModule } from './modules/job/job.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { RecruiterModule } from './modules/recruiters/recruiter.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
     JobModule,
     AuthModule,
     CloudinaryModule,
+    RecruiterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -34,11 +34,7 @@ export class UsersController {
   @Get('me')
   async findMe(@Req() request: Request) {
     const userId = request.user.sub;
-    const user = await this.usersService.findUserById(userId);
-    return {
-      message: `${user.name} fetched successfully`,
-      data: user,
-    };
+    return await this.usersService.findUserById(userId);
   }
 
   // Update profile sendiri
@@ -54,8 +50,8 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get()
-  findAllUsers(@Query() query: QueryUserDto) {
-    return this.usersService.findAllUsers(query);
+  async findAllUsers(@Query() query: QueryUserDto) {
+    return await this.usersService.findAllUsers(query);
   }
 
   // ADMIN dan RECRUITER bisa akses user by ID

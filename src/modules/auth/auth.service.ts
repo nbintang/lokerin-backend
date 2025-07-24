@@ -11,9 +11,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '../../common/mail/mail.service';
 import { CreateUserDto } from '../users/dto/user/create-user.dto';
-import { RecruitersService } from '../job/recruiters/recruiter.service';
-import { CreateRecruiterProfileDto } from '../job/dto/recruiter/create-recruiter.dto';
-
+import { RecruitersService } from '../recruiters/recruiter.service';
+import { CreateRecruiterProfileDto } from '../recruiters/dto/create-recruiter.dto';
 export interface JwtTokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -30,6 +29,10 @@ export class AuthService {
 
   hashData(data: string) {
     return argon2.hash(data);
+  }
+
+  async decodeToken(token: string) {
+    return this.jwtService.decode(token);
   }
 
   private async generateJwtTokens(

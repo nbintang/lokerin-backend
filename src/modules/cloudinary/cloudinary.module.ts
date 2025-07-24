@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
-import { Cloudinary as CloudinaryProvider } from './cloudinary.config';
+import { Cloudinary as CloudinaryProvider } from './config/cloudinary.config';
 import { CloudinaryController } from './cloudinary.controller';
 import { AccessControlService } from '../auth/shared/access-control.service';
 @Module({

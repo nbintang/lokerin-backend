@@ -19,8 +19,7 @@ import { RoleGuard } from './guards/role.guard';
 import { CreateUserDto } from '../users/dto/user/create-user.dto';
 import { UserRole } from '../users/enum/user.enum';
 import { AuthDto } from './dto/create-auth.dto';
-import { CreateRecruiterProfileDto } from '../job/dto/recruiter/create-recruiter.dto';
-
+import { CreateRecruiterProfileDto } from '../recruiters/dto/create-recruiter.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -128,9 +127,9 @@ export class AuthController {
     @Body() body: { email: string; password: string },
     @Req() request: Request,
   ) {
-    const existedTokenCookie = request.user;
-    if (existedTokenCookie)
-      throw new UnauthorizedException('You are already logged in!');
+    const existedTokenCookie = request.cookies.refreshToken;
+    const user = await this.authService.decodeToken(existedTokenCookie);
+    if (user) throw new UnauthorizedException('You are already logged in!');
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refreshToken', refreshToken, {

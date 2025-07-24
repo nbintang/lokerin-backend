@@ -21,27 +21,38 @@ export class UsersService {
     return user;
   }
 
-  findAllUsers(query: QueryUserDto) {
+  async findAllUsers(query: QueryUserDto) {
     const page = +(query.page || 1);
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
     const take = limit;
     const where: Prisma.UserWhereInput = {
-      ...{ name: { contains: query.name } },
-      ...{ email: { contains: query.email } },
-      ...{ role: { equals: query.role } },
+      ...(query.name && {
+        name: { contains: query.name, mode: 'insensitive' },
+      }),
+      ...(query.email && {
+        email: { contains: query.email, mode: 'insensitive' },
+      }),
+      role: {
+        ...(query.role && { equals: query.role }),
+        not: 'ADMINISTRATOR',
+      },
     };
 
-    const users = this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where,
       skip,
       take,
+      omit: { password: true },
+      include: {
+        recruiterProfile: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    const userCount = this.prisma.user.count({
+    const userCount = await this.prisma.user.count({
       where,
     });
 
@@ -60,6 +71,10 @@ export class UsersService {
       where: {
         id: id,
       },
+      include: {
+        recruiterProfile: true,
+      },
+      omit: { password: true },
     });
     return user;
   }
