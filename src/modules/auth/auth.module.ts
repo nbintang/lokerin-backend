@@ -9,6 +9,7 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { AccessControlService } from './shared/access-control.service';
 import { MailModule } from '../../common/mail/mail.module';
+import { JobModule } from '../job/job.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MailModule } from '../../common/mail/mail.module';
     JwtModule.register({}),
     ConfigModule,
     UsersModule,
+    JobModule,
     MailModule,
   ],
   providers: [

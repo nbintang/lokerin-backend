@@ -10,7 +10,9 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '../../common/mail/mail.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/user/create-user.dto';
+import { RecruitersService } from '../job/recruiters/recruiter.service';
+import { CreateRecruiterProfileDto } from '../job/dto/recruiter/create-recruiter.dto';
 
 export interface JwtTokenResponse {
   accessToken: string;
@@ -23,6 +25,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
+    private recruiterService: RecruitersService,
   ) {}
 
   hashData(data: string) {
@@ -89,6 +92,32 @@ export class AuthService {
         id: newUser.id,
       });
   }
+  async signUpAsRecruiter(createRecruiterDto: CreateRecruiterProfileDto) {
+    const [existingUser, existingPhone] = await Promise.all([
+      this.usersService.findUserByEmail(createRecruiterDto.email),
+      this.usersService.findUserByPhone(createRecruiterDto.phone),
+    ]);
+    if (existingUser || existingPhone)
+      throw new BadRequestException('User already exists');
+    const hashedPassword = await this.hashData(createRecruiterDto.password);
+    const newRecruiter = await this.recruiterService.createUserWithRecruiter({
+      about: createRecruiterDto.about,
+      companyName: createRecruiterDto.companyName,
+      position: createRecruiterDto.position,
+      website: createRecruiterDto.website,
+      name: createRecruiterDto.name,
+      email: createRecruiterDto.email,
+      phone: createRecruiterDto.phone,
+      avatarUrl: createRecruiterDto.avatarUrl,
+      password: hashedPassword,
+    });
+    if (newRecruiter)
+      await this.mailService.sendEmailConfirmation({
+        email: newRecruiter.user.email,
+        name: newRecruiter.user.name,
+        id: newRecruiter.user.id,
+      });
+  }
 
   async verifyEmailToken({
     token,
@@ -96,7 +125,6 @@ export class AuthService {
     token: string;
   }): Promise<JwtTokenResponse> {
     const { email } = await this.mailService.decodeConfirmationToken(token);
-
     const user = await this.confirmUserEmail(email);
     if (!user) throw new NotFoundException('User not found');
     const { accessToken, refreshToken } = await this.generateJwtTokens(

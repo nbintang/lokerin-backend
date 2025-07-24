@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { UserJwtPayload } from 'src/modules/auth/strategies/access-token.strategy';
 
 interface UserInfo {
   name: string;
@@ -53,17 +54,14 @@ export class MailService {
 
   public async decodeConfirmationToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<UserJwtPayload>(token, {
         secret: this.configService.get<string>('JWT_VERIFICATION_TOKEN_SECRET'),
       });
-      if (typeof payload === 'object' && 'email' in payload) {
-        return {
-          email: payload.email,
-          type: payload.type,
-        } as {
-          email: string;
-        };
-      }
+      return {
+        email: payload.email,
+        role: payload.role,
+        id: payload.sub,
+      };
       throw new BadRequestException('Invalid token');
     } catch (error) {
       if (error.name === 'TokenExpiredError') {

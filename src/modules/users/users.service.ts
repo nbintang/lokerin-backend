@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/user/create-user.dto';
+import { UpdateUserDto } from './dto/user/update-user.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
-import { QueryUserDto } from './dto/query-user.dto';
 import { Prisma } from '@prisma/client';
+import { QueryUserDto } from './dto/query-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -22,9 +22,9 @@ export class UsersService {
   }
 
   findAllUsers(query: QueryUserDto) {
-    const offset = +(query.offset || 0);
+    const page = +(query.page || 1);
     const limit = +(query.limit || 10);
-    const skip = (offset - 1) * limit;
+    const skip = (page - 1) * limit;
     const take = limit;
     const where: Prisma.UserWhereInput = {
       ...{ name: { contains: query.name } },
@@ -48,7 +48,7 @@ export class UsersService {
     return {
       users,
       meta: {
-        offset,
+        page,
         limit,
         total: userCount,
       },

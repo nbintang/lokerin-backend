@@ -10,7 +10,6 @@ datasource db {
 enum ApplicationStatus {
   APPLIED
   REVIEWED
-  INTERVIEW
   REJECTED
   ACCEPTED
 

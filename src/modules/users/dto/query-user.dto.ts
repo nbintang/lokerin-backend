@@ -3,7 +3,7 @@ import { UserRole } from '../enum/user.enum';
 
 export class QueryUserDto {
   @IsOptional()
-  offset: string;
+  page: string;
 
   @IsOptional()
   limit: string;

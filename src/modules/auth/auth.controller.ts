@@ -16,9 +16,10 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AccessTokenGuard } from './guards/access-token.guard';
 import { Roles } from './decorators/roles.decorator';
 import { RoleGuard } from './guards/role.guard';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/user/create-user.dto';
 import { UserRole } from '../users/enum/user.enum';
 import { AuthDto } from './dto/create-auth.dto';
+import { CreateRecruiterProfileDto } from '../job/dto/recruiter/create-recruiter.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,26 @@ export class AuthController {
       if (existedTokenCookie)
         throw new UnauthorizedException('You are already logged in!');
       await this.authService.signUp(body);
+      return {
+        message: 'Success!, Please check your email for the verification link',
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Something Went Wrong',
+        error.status || 500,
+      );
+    }
+  }
+  @Post('recruiter-signup')
+  async recruiterSignup(
+    @Body() body: CreateRecruiterProfileDto,
+    @Req() request: Request,
+  ) {
+    try {
+      const existedTokenCookie = request.user;
+      if (existedTokenCookie)
+        throw new UnauthorizedException('You are already logged in!');
+      await this.authService.signUpAsRecruiter(body);
       return {
         message: 'Success!, Please check your email for the verification link',
       };

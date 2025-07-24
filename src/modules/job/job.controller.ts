@@ -1,51 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseInterceptors,
-  UploadedFile,
-  Query,
-} from '@nestjs/common';
-import { JobService } from './job.service';
-import { CreateJobDto } from './dto/create-job.dto';
-import { UpdateJobDto } from './dto/update-job.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Query } from '@nestjs/common';
+import { ApplicantsService } from './applicants/applicants.service';
 import { QueryJobDto } from './dto/query-job.dto';
 
-@Controller('job')
+@Controller('jobs')
 export class JobController {
-  constructor(private readonly jobService: JobService) {}
-
-  @Post('recommend')
-  @UseInterceptors(FileInterceptor('resume'))
-  async recommend(
-    @UploadedFile() file: Express.Multer.File,
-    @Query() query: QueryJobDto,
-  ) {
-    return this.jobService.recommendJobs(file, query);
-  }
+  constructor(private readonly appplicantService: ApplicantsService) {}
 
   @Get()
-  findAll() {
-    return this.jobService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.jobService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
-    return this.jobService.update(+id, updateJobDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.jobService.remove(+id);
+  async findJobs(@Query() query: QueryJobDto) {
+    return await this.appplicantService.findJobs(query);
   }
 }

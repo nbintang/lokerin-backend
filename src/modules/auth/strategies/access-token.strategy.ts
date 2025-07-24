@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy as JWTStrategy } from 'passport-jwt';
+import { UserRole } from 'src/modules/users/enum/user.enum';
 
 export type JwtPayload = {
   sub: string;
   email: string;
-  role: string;
+  role: UserRole;
   verified: boolean;
 };
 
