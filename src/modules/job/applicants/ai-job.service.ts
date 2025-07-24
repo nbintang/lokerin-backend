@@ -64,7 +64,7 @@ export class AiJobService {
       form.append('job_data', JSON.stringify(jobData));
       const response = await firstValueFrom(
         this.httpService.post<JobMatchingAPIResponse | null>(
-          'http://127.0.0.1:8000/recommend-jobs',
+          'https://bxntang-job-recommendation/recommend-jobs',
           form,
           { headers: { ...form.getHeaders() }, timeout: 60000 },
         ),
