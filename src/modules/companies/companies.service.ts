@@ -57,8 +57,14 @@ export class CompaniesService {
     return companies;
   }
 
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
-    return `This action updates a #${id} company`;
+  async updateCompanyById(id: string, updateCompanyDto: UpdateCompanyDto) {
+    const company = await this.prisma.company.update({
+      where: { id },
+      data: {
+        ...updateCompanyDto,
+      },
+    });
+    return company;
   }
 
   remove(id: number) {

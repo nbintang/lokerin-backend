@@ -50,7 +50,7 @@ model RecruiterProfile {
   about     String
   position  Role     @relation(fields: [roleId], references: [id])
   user      User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_recruiter_profile")
-  company   Company  @relation(fields: [companyId], references: [id], map: "fk_companies_recruiter_profile")
+  company   Company  @relation(fields: [companyId], references: [id], map: "fk_companies_recruiter_profile", onDelete: Cascade)
   roleId    String   @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -97,7 +97,7 @@ model Job {
   createdAt    DateTime         @default(now()) @map("created_at")
   updatedAt    DateTime         @updatedAt @map("updated_at")
   applications JobApplication[]
-  company      Company          @relation(fields: [companyId], references: [id], map: "fk_companies_jobs")
+  company      Company          @relation(fields: [companyId], references: [id], map: "fk_companies_jobs", onDelete: Cascade)
   role         Role             @relation(fields: [roleId], references: [id], map: "fk_roles_jobs")
   user         User             @relation("users_posted_jobs", fields: [postedBy], references: [id], map: "fk_users_posted_jobs")
 

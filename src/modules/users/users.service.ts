@@ -69,9 +69,6 @@ export class UsersService {
       where: {
         id: id,
       },
-      include: {
-        recruiterProfile: true,
-      },
       omit: { password: true },
     });
     return user;
@@ -88,10 +85,12 @@ export class UsersService {
     });
     return user;
   }
-  updateUserById(id: string, updateUserDto: UpdateUserDto) {
-    const user = this.prisma.user.update({
+  async updateUserById(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.update({
       where: { id },
-      data: { ...updateUserDto },
+      data: {
+        ...updateUserDto,
+      },
       omit: { password: true, role: true },
     });
     return user;
@@ -104,7 +103,7 @@ export class UsersService {
     });
     return user;
   }
-  updateVerifiedById(id: string) {
+  verifiedUser(id: string) {
     const user = this.prisma.user.update({
       where: { id },
       data: { isVerified: true },

@@ -49,8 +49,9 @@ export class RecruitersService {
         data: {
           about,
           position: {
-            create: {
-              name: position,
+            connectOrCreate: {
+              where: { name: position },
+              create: { name: position },
             },
           },
           company: {
@@ -74,41 +75,47 @@ export class RecruitersService {
     }
     return null;
   }
-
+  async findRecruiterByUserId(id: string) {
+    return await this.prisma.recruiterProfile.findUnique({
+      where: { userId: id },
+      include: {
+        user: { omit: { password: true, role: true } },
+        company: true,
+        position: true,
+      },
+    });
+  }
   async findRecruiterById(id: string) {
-    const recruiter = await this.prisma.recruiterProfile.findUnique({
+    return await this.prisma.recruiterProfile.findUnique({
       where: { id },
     });
-    return recruiter;
   }
-  async updateRecruiter(id: string, dto: UpdateRecruiterProfileDto) {
-    const updatedRecruiter = await this.prisma.recruiterProfile.update({
+  async updateRecruiterByUserId(
+    id: string,
+    updateUserDto: UpdateRecruiterProfileDto,
+  ) {
+    const { about, position, ...userDto } = updateUserDto;
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
-        about: dto.about,
-        position: {
+        ...userDto,
+        recruiterProfile: {
           update: {
-            name: dto.position,
-          },
-        },
-        company: {
-          connect: {
-            id: dto.companyId,
-          },
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
+            about,
+            position: {
+              connectOrCreate: {
+                where: { name: position },
+                create: { name: position },
+              },
+            },
           },
         },
       },
+      omit: { password: true, role: true },
     });
-    return updatedRecruiter;
+    return user;
   }
+
   async deleteRecruiter(id: string) {
     return await this.prisma.recruiterProfile.delete({
       where: { id },

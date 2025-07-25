@@ -5,8 +5,9 @@ import {
   Query,
   Body,
   Param,
-  Put,
   Delete,
+  Req,
+  Patch,
 } from '@nestjs/common';
 import { RecruitersService } from './recruiter.service';
 import { AccessTokenGuard } from 'src/modules/auth/guards/access-token.guard';
@@ -16,20 +17,29 @@ import { EmailVerifiedGuard } from 'src/modules/auth/guards/email-verified.guard
 import { UserRole } from 'src/modules/users/enum/user.enum';
 import { QueryUserDto } from 'src/modules/users/dto/query-user.dto';
 import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
+import { Request } from 'express';
 
 @UseGuards(AccessTokenGuard)
 @Controller('recruiters')
 export class RecruitersController {
   constructor(private readonly recruitersService: RecruitersService) {}
 
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Put(':id')
-  async updateRecruiter(
-    @Param('id') id: string,
+  // as Recruiter
+  @UseGuards(EmailVerifiedGuard)
+  @Get('profile')
+  async getRecruiterProfile(@Req() req: Request) {
+    const userId = req.user.sub;
+    return await this.recruitersService.findRecruiterByUserId(userId);
+  }
+
+  @UseGuards(EmailVerifiedGuard)
+  @Patch('profile')
+  async updateRecruiterProfile(
+    @Req() req: Request,
     @Body() dto: UpdateRecruiterProfileDto,
   ) {
-    return await this.recruitersService.updateRecruiter(id, dto);
+    const userId = req.user.sub;
+    return await this.recruitersService.updateRecruiterByUserId(userId, dto);
   }
 
   // as Admin
@@ -39,6 +49,7 @@ export class RecruitersController {
   async getRecruiters(@Query() query: QueryUserDto) {
     return await this.recruitersService.findRecruiters(query);
   }
+
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')

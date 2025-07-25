@@ -67,7 +67,7 @@ export class AuthService {
     const user = await this.usersService.findUserByEmail(email);
     if (user.isVerified)
       throw new BadRequestException('Email already verified');
-    return await this.usersService.updateVerifiedById(user.id);
+    return await this.usersService.verifiedUser(user.id);
   }
   compareHash(plainText: string, hash: string) {
     return argon2.verify(hash, plainText);

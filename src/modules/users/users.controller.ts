@@ -26,7 +26,7 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get('me')
-  async findMe(@Req() request: Request) {
+  async findProfile(@Req() request: Request) {
     const userId = request.user.sub;
     return await this.usersService.findUserById(userId);
   }
@@ -35,9 +35,12 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch('me')
-  updateProfile(@Req() request: Request, @Body() updateUserDto: UpdateUserDto) {
+  async updateProfile(
+    @Req() request: Request,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     const userId = request.user.sub;
-    return this.usersService.updateUserById(userId, updateUserDto);
+    return await this.usersService.updateUserById(userId, updateUserDto);
   }
 
   @Roles(UserRole.ADMINISTRATOR)
@@ -57,11 +60,11 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch(':id')
-  updateUserById(
+  async updateUserById(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.updateUserById(id, updateUserDto);
+    return await this.usersService.updateUserById(id, updateUserDto);
   }
 
   // Hapus user by ID — hanya admin
