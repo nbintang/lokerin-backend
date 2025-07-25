@@ -18,6 +18,7 @@ export class EmailVerifiedGuard implements CanActivate {
       .switchToHttp()
       .getRequest<{ user: UserJwtPayload }>();
     const user = request.user;
+    if (!user) throw new ForbiddenException('Please Login First');
     if (!user.verified)
       throw new ForbiddenException('Please Verify Your Email First');
     return true;

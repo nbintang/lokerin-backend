@@ -140,7 +140,7 @@ export class AuthController {
       });
     return {
       message: 'Successfully signed in',
-      data: { accessToken },
+      accessToken,
     };
   }
 

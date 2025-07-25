@@ -21,7 +21,6 @@ import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
 @Controller('recruiters')
 export class RecruitersController {
   constructor(private readonly recruitersService: RecruitersService) {}
-  // as Recruiter
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
@@ -37,13 +36,13 @@ export class RecruitersController {
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get()
-  async findRecruiters(@Query() query: QueryUserDto) {
+  async getRecruiters(@Query() query: QueryUserDto) {
     return await this.recruitersService.findRecruiters(query);
   }
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')
-  async findRecruiterById(@Param('id') id: string) {
+  async getRecruiterById(@Param('id') id: string) {
     return await this.recruitersService.findRecruiterById(id);
   }
 

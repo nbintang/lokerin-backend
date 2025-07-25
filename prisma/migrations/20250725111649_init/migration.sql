@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "application_status" AS ENUM ('APPLIED', 'REVIEWED', 'INTERVIEW', 'REJECTED', 'ACCEPTED');
+CREATE TYPE "application_status" AS ENUM ('APPLIED', 'REVIEWED', 'REJECTED', 'ACCEPTED');
 
 -- CreateEnum
 CREATE TYPE "role" AS ENUM ('MEMBER', 'ADMINISTRATOR', 'RECRUITER');
@@ -14,8 +14,8 @@ CREATE TABLE "users" (
     "role" "role" NOT NULL DEFAULT 'MEMBER',
     "avatar_url" TEXT,
     "is_verified" BOOLEAN DEFAULT false,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -24,12 +24,11 @@ CREATE TABLE "users" (
 CREATE TABLE "recruiter_profiles" (
     "id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
-    "company_name" TEXT NOT NULL,
-    "position" TEXT NOT NULL,
-    "website" TEXT NOT NULL,
+    "company_id" UUID NOT NULL,
     "about" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "roleId" UUID NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "recruiter_profiles_pkey" PRIMARY KEY ("id")
 );
@@ -42,8 +41,8 @@ CREATE TABLE "companies" (
     "website" TEXT NOT NULL,
     "created_by" UUID NOT NULL,
     "logo_url" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "companies_pkey" PRIMARY KEY ("id")
 );
@@ -52,23 +51,10 @@ CREATE TABLE "companies" (
 CREATE TABLE "roles" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "cvs" (
-    "id" UUID NOT NULL,
-    "user_id" UUID NOT NULL,
-    "file_url" TEXT NOT NULL,
-    "extracted" TEXT NOT NULL,
-    "predicted_role_id" UUID NOT NULL,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
-
-    CONSTRAINT "cvs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -81,8 +67,8 @@ CREATE TABLE "jobs" (
     "location" TEXT NOT NULL,
     "salary_range" TEXT NOT NULL,
     "posted_by" UUID NOT NULL,
-    "created_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "jobs_pkey" PRIMARY KEY ("id")
 );
@@ -93,8 +79,8 @@ CREATE TABLE "job_applications" (
     "user_id" UUID NOT NULL,
     "job_id" UUID NOT NULL,
     "status" "application_status" NOT NULL DEFAULT 'APPLIED',
-    "applied_at" TIMESTAMPTZ(6),
-    "updated_at" TIMESTAMPTZ(6),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "job_applications_pkey" PRIMARY KEY ("id")
 );
@@ -112,16 +98,16 @@ CREATE UNIQUE INDEX "idx_recruiter_profiles_user_id" ON "recruiter_profiles"("us
 CREATE UNIQUE INDEX "uni_roles_name" ON "roles"("name");
 
 -- AddForeignKey
+ALTER TABLE "recruiter_profiles" ADD CONSTRAINT "recruiter_profiles_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "recruiter_profiles" ADD CONSTRAINT "fk_users_recruiter_profile" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "recruiter_profiles" ADD CONSTRAINT "fk_companies_recruiter_profile" FOREIGN KEY ("company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "companies" ADD CONSTRAINT "fk_users_companies" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "cvs" ADD CONSTRAINT "fk_roles_c_vs" FOREIGN KEY ("predicted_role_id") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "cvs" ADD CONSTRAINT "fk_users_c_vs" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "jobs" ADD CONSTRAINT "fk_companies_jobs" FOREIGN KEY ("company_id") REFERENCES "companies"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

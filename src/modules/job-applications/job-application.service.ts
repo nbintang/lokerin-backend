@@ -12,7 +12,7 @@ import { UserRole } from '../users/enum/user.enum';
 @Injectable()
 export class JobApplicationService {
   constructor(private readonly prisma: PrismaService) {}
-  async applyJob(userId: string, id: string) {
+  async applyJobApplications(userId: string, id: string) {
     const job = await this.prisma.job.findUniqueOrThrow({
       where: { id, user: { role: UserRole.RECRUITER } },
     });
@@ -56,11 +56,9 @@ export class JobApplicationService {
     });
     return {
       applyers,
-      meta: {
-        page,
-        limit,
-        total: applyersCount,
-      },
+      page,
+      limit,
+      total: applyersCount,
     };
   }
   async updateApplicantStatusByRecruiter(

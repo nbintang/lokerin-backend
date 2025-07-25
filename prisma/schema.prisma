@@ -16,7 +16,7 @@ enum ApplicationStatus {
   @@map("application_status")
 }
 
-enum RoleType {
+enum UserRole {
   MEMBER
   ADMINISTRATOR
   RECRUITER
@@ -30,7 +30,7 @@ model User {
   email            String            @unique(map: "idx_users_email")
   phone            String            @unique(map: "idx_users_phone")
   password         String
-  role             RoleType          @default(MEMBER)
+  role             UserRole          @default(MEMBER)
   avatarUrl        String?           @map("avatar_url")
   isVerified       Boolean?          @default(false) @map("is_verified")
   createdAt        DateTime          @default(now()) @map("created_at")
@@ -44,44 +44,46 @@ model User {
 }
 
 model RecruiterProfile {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @unique(map: "idx_recruiter_profiles_user_id") @map("user_id") @db.Uuid
-  companyName String   @map("company_name")
-  position    String
-  website     String
-  about       String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  user        User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_recruiter_profile")
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique(map: "idx_recruiter_profiles_user_id") @map("user_id") @db.Uuid
+  companyId String   @map("company_id") @db.Uuid
+  about     String
+  position  Role     @relation(fields: [roleId], references: [id])
+  user      User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_recruiter_profile")
+  company   Company  @relation(fields: [companyId], references: [id], map: "fk_companies_recruiter_profile")
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("recruiter_profiles")
 }
 
 model Company {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String
-  description String
-  website     String
-  createdBy   String   @map("created_by") @db.Uuid
-  logoUrl     String   @map("logo_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  user        User     @relation("users_companies", fields: [createdBy], references: [id], map: "fk_users_companies")
-  jobs        Job[]
+  id               String             @id @default(uuid()) @db.Uuid
+  name             String
+  description      String
+  website          String
+  createdBy        String             @map("created_by") @db.Uuid
+  logoUrl          String             @map("logo_url")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  user             User               @relation("users_companies", fields: [createdBy], references: [id], map: "fk_users_companies")
+  jobs             Job[]
+  recruiterProfile RecruiterProfile[]
 
   @@map("companies")
 }
 
 model Role {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique(map: "uni_roles_name")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  jobs      Job[]
+  id               String             @id @default(uuid()) @db.Uuid
+  name             String             @unique(map: "uni_roles_name")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  jobs             Job[]
+  RecruiterProfile RecruiterProfile[]
 
   @@map("roles")
 }
-
 
 model Job {
   id           String           @id @default(uuid()) @db.Uuid
@@ -107,7 +109,6 @@ model JobApplication {
   userId    String            @map("user_id") @db.Uuid
   jobId     String            @map("job_id") @db.Uuid
   status    ApplicationStatus @default(APPLIED)
-  // Sekarang required, dengan default sekarang
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @updatedAt @map("updated_at")
 

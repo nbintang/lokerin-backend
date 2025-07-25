@@ -10,12 +10,13 @@ import {
 } from '@nestjs/common';
 import { QueryJobDto } from './dto/query-job.dto';
 import { JobService } from './job.service';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../users/enum/user.enum';
-import { RoleGuard } from '../auth/guards/role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AiJobService } from './ai-job.service';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/enum/user.enum';
 
 @Controller('jobs')
 export class JobController {
@@ -33,9 +34,8 @@ export class JobController {
   async findJobById(@Param('id') id: string) {
     return await this.jobService.findJobById(id);
   }
-
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @Roles(UserRole.MEMBER)
   @Post('recommend-jobs')
   @UseInterceptors(FileInterceptor('resume'))
   async recommend(@UploadedFile() file: Express.Multer.File) {

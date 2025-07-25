@@ -26,6 +26,7 @@ export interface Metadata {
 }
 @Injectable()
 export class AiJobService {
+  private MODEL_URL = 'https://bxntang-job-recommendation.hf.space';
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
@@ -64,7 +65,7 @@ export class AiJobService {
       form.append('job_data', JSON.stringify(jobData));
       const response = await firstValueFrom(
         this.httpService.post<JobMatchingAPIResponse | null>(
-          'https://bxntang-job-recommendation.hf.space/recommend-jobs',
+          `${this.MODEL_URL}/recommend-jobs`,
           form,
           { headers: { ...form.getHeaders() }, timeout: 60000 },
         ),

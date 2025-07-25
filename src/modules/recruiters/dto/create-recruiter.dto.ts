@@ -1,12 +1,9 @@
 // src/modules/recruiters/dto/create-recruiter-profile.dto.ts
-import { IsString, IsUrl, Length } from 'class-validator';
+
+import { IsString, IsUrl, IsUUID, Length } from 'class-validator';
 import { CreateUserDto } from 'src/modules/users/dto/user/create-user.dto';
 
 export class CreateRecruiterProfileDto extends CreateUserDto {
-  @IsString()
-  @Length(2, 100)
-  companyName: string;
-
   @IsString()
   @Length(2, 50)
   position: string;
@@ -17,4 +14,7 @@ export class CreateRecruiterProfileDto extends CreateUserDto {
   @IsString()
   @Length(10, 1000)
   about: string;
+
+  @IsUUID()
+  companyId: string;
 }

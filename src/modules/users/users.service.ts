@@ -58,11 +58,9 @@ export class UsersService {
 
     return {
       users,
-      meta: {
-        page,
-        limit,
-        total: userCount,
-      },
+      page,
+      limit,
+      total: userCount,
     };
   }
 

@@ -54,7 +54,6 @@ export class UsersController {
     return this.usersService.findUserById(id);
   }
 
-  // Update user by ID (mungkin dipakai admin)
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch(':id')

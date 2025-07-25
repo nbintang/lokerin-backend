@@ -105,7 +105,7 @@ export class AuthService {
     const hashedPassword = await this.hashData(createRecruiterDto.password);
     const newRecruiter = await this.recruiterService.createUserWithRecruiter({
       about: createRecruiterDto.about,
-      companyName: createRecruiterDto.companyName,
+      companyId: createRecruiterDto.companyId,
       position: createRecruiterDto.position,
       website: createRecruiterDto.website,
       name: createRecruiterDto.name,

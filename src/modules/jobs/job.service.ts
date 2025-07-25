@@ -24,11 +24,9 @@ export class JobService {
     const jobsCount = await this.prisma.job.count();
     return {
       jobs,
-      meta: {
-        page,
-        limit,
-        total: jobsCount,
-      },
+      page,
+      limit,
+      total: jobsCount,
     };
   }
 

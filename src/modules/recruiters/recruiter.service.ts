@@ -31,37 +31,48 @@ export class RecruitersService {
   }
 
   async createUserWithRecruiter(dto: CreateRecruiterProfileDto) {
-    const { about, companyName, position, website, ...userInput } = dto;
+    const { about, position, companyId, ...userInput } = dto;
     const existedUser = await this.prisma.user.findUnique({
       where: {
         email: userInput.email,
       },
     });
     if (existedUser) throw new BadRequestException('User already exists');
-    const recruiter = await this.prisma.recruiterProfile.create({
+    const user = await this.prisma.user.create({
       data: {
-        about,
-        companyName,
-        position,
-        website,
-        user: {
-          create: {
-            role: UserRole.RECRUITER,
-            ...userInput,
-          },
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
+        ...userInput,
+        role: UserRole.RECRUITER,
       },
     });
-    return recruiter;
+    if (user) {
+      const recruiter = await this.prisma.recruiterProfile.create({
+        data: {
+          about,
+          position: {
+            create: {
+              name: position,
+            },
+          },
+          company: {
+            connect: { id: companyId },
+          },
+          user: {
+            connect: { id: user.id },
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+      });
+      return recruiter;
+    }
+    return null;
   }
 
   async findRecruiterById(id: string) {
@@ -73,7 +84,19 @@ export class RecruitersService {
   async updateRecruiter(id: string, dto: UpdateRecruiterProfileDto) {
     const updatedRecruiter = await this.prisma.recruiterProfile.update({
       where: { id },
-      data: { ...dto },
+      data: {
+        about: dto.about,
+        position: {
+          update: {
+            name: dto.position,
+          },
+        },
+        company: {
+          connect: {
+            id: dto.companyId,
+          },
+        },
+      },
       include: {
         user: {
           select: {

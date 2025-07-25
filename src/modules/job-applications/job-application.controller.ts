@@ -19,7 +19,9 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { QueryUserDto } from '../users/dto/query-user.dto';
 import { Request } from 'express';
 import { JobApplicationStatus } from './enum/job-application.enum';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 
+@UseGuards(AccessTokenGuard)
 @Controller('job-application')
 export class JobApplicationController {
   constructor(private readonly jobApplicationService: JobApplicationService) {}
@@ -36,6 +38,7 @@ export class JobApplicationController {
   async getApplicantsById(@Param('id') id: string) {
     return await this.jobApplicationService.findApplicantById(id);
   }
+
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Put(':id')
@@ -52,14 +55,17 @@ export class JobApplicationController {
   }
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
-  @Post('apply/:id')
-  async apply(@Req() req: Request, @Param('id') id: string) {
+  @Post('apply/:jobId')
+  async apply(@Req() req: Request, @Param('jobId') jobId: string) {
     try {
       const user = req.user;
       if (user.role !== UserRole.MEMBER)
         throw new HttpException('You are not a member', HttpStatus.FORBIDDEN);
       const userId = user.sub;
-      return await this.jobApplicationService.applyJob(userId, id);
+      return await this.jobApplicationService.applyJobApplications(
+        userId,
+        jobId,
+      );
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }

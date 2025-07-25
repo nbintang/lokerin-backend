@@ -5,7 +5,6 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { MailModule } from './common/mail/mail.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { UsersModule } from './modules/users/users.module';
-import { CvModule } from './modules/cv/cv.module';
 import { JobModule } from './modules/jobs/job.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
@@ -19,7 +18,6 @@ import { CompaniesModule } from './modules/companies/companies.module';
     MailModule,
     LoggerModule,
     UsersModule,
-    CvModule,
     JobModule,
     AuthModule,
     CloudinaryModule,
