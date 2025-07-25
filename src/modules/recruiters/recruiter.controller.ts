@@ -2,12 +2,11 @@ import {
   Controller,
   Get,
   UseGuards,
-  Req,
   Query,
   Body,
   Param,
-  Patch,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { RecruitersService } from './recruiter.service';
 import { AccessTokenGuard } from 'src/modules/auth/guards/access-token.guard';
@@ -16,41 +15,42 @@ import { RoleGuard } from 'src/modules/auth/guards/role.guard';
 import { EmailVerifiedGuard } from 'src/modules/auth/guards/email-verified.guard';
 import { UserRole } from 'src/modules/users/enum/user.enum';
 import { QueryUserDto } from 'src/modules/users/dto/query-user.dto';
-import { JobApplicationStatus } from '../job/enum/job.enum';
-import { Request } from 'express';
+import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
 
 @UseGuards(AccessTokenGuard)
 @Controller('recruiters')
 export class RecruitersController {
   constructor(private readonly recruitersService: RecruitersService) {}
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  // as Recruiter
+
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
-  @Get('applicants')
-  async getApplicants(@Req() req: Request, @Query() query: QueryUserDto) {
-    const recruiterId = req.user.sub;
-    return await this.recruitersService.findApplicantsByRecruiter(
-      recruiterId,
-      query,
-    );
-  }
   @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
-  @Put('applicants/:applicantId')
-  async updateApplicantStatus(
-    @Param('applicantId') applicantId: string,
-    @Query('jobId') jobId: string,
-    @Body() body: { status: JobApplicationStatus },
+  @Put(':id')
+  async updateRecruiter(
+    @Param('id') id: string,
+    @Body() dto: UpdateRecruiterProfileDto,
   ) {
-    return await this.recruitersService.updateApplicantStatusByRecruiter(
-      applicantId,
-      jobId,
-      body.status,
-    );
+    return await this.recruitersService.updateRecruiter(id, dto);
   }
+
+  // as Admin
+  @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
-  @Get('applicants/:applicantId')
-  async getApplicantsByApplicantId(@Param('applicantId') applicantId: string) {
-    return await this.recruitersService.findApplicantByApplicantId(applicantId);
+  @Get()
+  async findRecruiters(@Query() query: QueryUserDto) {
+    return await this.recruitersService.findRecruiters(query);
+  }
+  @Roles(UserRole.ADMINISTRATOR)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Get(':id')
+  async findRecruiterById(@Param('id') id: string) {
+    return await this.recruitersService.findRecruiterById(id);
+  }
+
+  @Roles(UserRole.ADMINISTRATOR)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Delete(':id')
+  async deleteRecruiter(@Param('id') id: string) {
+    return await this.recruitersService.deleteRecruiter(id);
   }
 }

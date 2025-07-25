@@ -1,14 +1,10 @@
 // src/modules/recruiters/recruiters.service.ts
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { QueryUserDto } from 'src/modules/users/dto/query-user.dto';
 import { UserRole } from 'src/modules/users/enum/user.enum';
 import { CreateRecruiterProfileDto } from './dto/create-recruiter.dto';
-import { JobApplicationStatus } from '../job/enum/job.enum';
+import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
 
 @Injectable()
 export class RecruitersService {
@@ -68,104 +64,31 @@ export class RecruitersService {
     return recruiter;
   }
 
-  async findApplicantsByRecruiter(recruiterId: string, query: QueryUserDto) {
-    const page = +(query.page || 1);
-    const limit = +(query.limit || 10);
-    const skip = (page - 1) * limit;
-    const take = limit;
-    const applyers = await this.prisma.jobApplication.findMany({
-      where: {
-        job: {
-          postedBy: recruiterId,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            avatarUrl: true,
-            name: true,
-          },
-        },
-        job: {
-          select: { id: true, title: true },
-        },
-      },
-      skip,
-      take,
-      orderBy: {
-        createdAt: 'desc',
-      },
+  async findRecruiterById(id: string) {
+    const recruiter = await this.prisma.recruiterProfile.findUnique({
+      where: { id },
     });
-    const applyersCount = await this.prisma.jobApplication.count({
-      where: { job: { postedBy: recruiterId } },
-    });
-    return {
-      applyers,
-      meta: {
-        page,
-        limit,
-        total: applyersCount,
-      },
-    };
+    return recruiter;
   }
-
-  async updateApplicantStatusByRecruiter(
-    applicantId: string,
-    jobId: string,
-    status: JobApplicationStatus,
-  ) {
-    const application = await this.prisma.jobApplication.findFirst({
-      where: { AND: [{ id: applicantId }, { jobId }] },
-    });
-    if (!application) throw new NotFoundException('Application not found');
-    return this.prisma.jobApplication.update({
-      where: { id: application.id },
-      data: { status },
-    });
-  }
-
-  async findApplicantByApplicantId(applicantId: string) {
-    const applications = await this.prisma.jobApplication.findFirst({
-      where: {
-        id: applicantId,
-      },
+  async updateRecruiter(id: string, dto: UpdateRecruiterProfileDto) {
+    const updatedRecruiter = await this.prisma.recruiterProfile.update({
+      where: { id },
+      data: { ...dto },
       include: {
         user: {
           select: {
             id: true,
             email: true,
             name: true,
-            phone: true,
-            avatarUrl: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        job: {
-          select: {
-            id: true,
-            title: true,
-            location: true,
-            description: true,
-            role: {
-              select: {
-                name: true,
-              },
-            },
-            company: {
-              select: {
-                name: true,
-                logoUrl: true,
-                description: true,
-                website: true,
-              },
-            },
           },
         },
       },
     });
-    return applications;
+    return updatedRecruiter;
+  }
+  async deleteRecruiter(id: string) {
+    return await this.prisma.recruiterProfile.delete({
+      where: { id },
+    });
   }
 }

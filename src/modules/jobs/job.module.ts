@@ -3,11 +3,11 @@ import { HttpModule } from '@nestjs/axios';
 import { PrismaModule } from 'src/common/prisma/prisma.module';
 import { AccessControlService } from '../auth/shared/access-control.service';
 import { JobController } from './job.controller';
-import { ApplicantsModule } from '../applicants/applicant.module';
-import { ApplicantsService } from '../applicants/applicants.service';
+import { JobService } from './job.service';
+import { AiJobService } from './ai-job.service';
 @Module({
-  imports: [HttpModule, PrismaModule, ApplicantsModule],
+  imports: [HttpModule, PrismaModule],
   controllers: [JobController],
-  providers: [ApplicantsService, AccessControlService],
+  providers: [JobService, AiJobService, AccessControlService],
 })
 export class JobModule {}

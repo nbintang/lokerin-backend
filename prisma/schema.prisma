@@ -36,7 +36,6 @@ model User {
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   companies        Company[]         @relation("users_companies")
-  cvs              CV[]              @relation("users_cvs")
   jobApplications  JobApplication[]  @relation("users_applications")
   jobs             Job[]             @relation("users_posted_jobs")
   recruiterProfile RecruiterProfile? @relation("users_recruiter_profile")
@@ -78,25 +77,11 @@ model Role {
   name      String   @unique(map: "uni_roles_name")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  cvs       CV[]
   jobs      Job[]
 
   @@map("roles")
 }
 
-model CV {
-  id              String   @id @default(uuid()) @db.Uuid
-  userId          String   @map("user_id") @db.Uuid
-  fileUrl         String   @map("file_url")
-  extracted       String
-  predictedRoleId String   @map("predicted_role_id") @db.Uuid
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-  role            Role     @relation(fields: [predictedRoleId], references: [id], map: "fk_roles_c_vs")
-  user            User     @relation("users_cvs", fields: [userId], references: [id], map: "fk_users_c_vs")
-
-  @@map("cvs")
-}
 
 model Job {
   id           String           @id @default(uuid()) @db.Uuid

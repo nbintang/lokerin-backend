@@ -1,7 +1,7 @@
 // src/modules/recruiters/dto/update-recruiter-profile.dto.ts
-import { PartialType } from '@nestjs/mapped-types';
+import { OmitType, PartialType } from '@nestjs/mapped-types';
 import { CreateRecruiterProfileDto } from './create-recruiter.dto';
 
 export class UpdateRecruiterProfileDto extends PartialType(
-  CreateRecruiterProfileDto,
+  OmitType(CreateRecruiterProfileDto, ['password', 'email', 'phone']),
 ) {}

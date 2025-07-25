@@ -174,9 +174,7 @@ export class AuthService {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
     const hashedPassword = await this.hashData(newPassword);
-    await this.usersService.updateUserById(user.id, {
-      password: hashedPassword,
-    });
+    await this.usersService.updatePassword(user.id, hashedPassword);
     return {
       message: 'Password Changed Successfully',
     };

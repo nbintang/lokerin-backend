@@ -15,12 +15,6 @@ interface UserInfo {
   id: string;
   email: string;
 }
-const dateFormatter = (date: Date): string => {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  return `${day} ${month.toString().padStart(2, '0')}, ${year}`;
-};
 interface EmailTemplate {
   title: string;
   message: string;
@@ -44,6 +38,12 @@ export class MailService {
         ? 'http://localhost:3000/api'
         : this.configService.get<string>('FRONTEND_URL') ||
           'http://localhost:3000/api';
+  }
+  private dateFormatter(date: Date): string {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${day} ${month.toString().padStart(2, '0')}, ${year}`;
   }
   private generateVerificationToken(payload: { email: string }): string {
     return this.jwtService.sign(payload, {
@@ -140,7 +140,7 @@ export class MailService {
       title: `Selamat Datang, ${userName}! 🎉`,
       message:
         'Terima kasih telah bergabung dengan Wartech - platform berita teknologi terkini dan terdepan untuk solusi inovatif Anda.',
-      date: dateFormatter(new Date()),
+      date: this.dateFormatter(new Date()),
       description:
         'Untuk memulai perjalanan teknologi Anda bersama kami dan mengakses semua fitur eksklusif, silakan verifikasi alamat email Anda dengan menekan tombol di bawah ini.',
     };
@@ -148,7 +148,7 @@ export class MailService {
   private getPasswordResetTemplate(userName: string): EmailTemplate {
     return {
       title: 'Reset Kata Sandi 🔐',
-      date: dateFormatter(new Date()),
+      date: this.dateFormatter(new Date()),
       message: `Hai ${userName}, kami menerima permintaan untuk mereset kata sandi akun Wartech Anda.`,
       description:
         'Untuk keamanan akun Anda, klik tombol di bawah ini untuk mengatur ulang kata sandi dengan aman. Pastikan Anda membuat kata sandi yang kuat dan unik.',

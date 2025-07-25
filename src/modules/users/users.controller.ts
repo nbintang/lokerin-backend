@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
@@ -10,7 +9,6 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/user/create-user.dto';
 import { UpdateUserDto } from './dto/user/update-user.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
@@ -24,13 +22,9 @@ import { QueryUserDto } from './dto/query-user.dto';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
-  }
-
   // Get profile diri sendiri
+  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get('me')
   async findMe(@Req() request: Request) {
     const userId = request.user.sub;
@@ -46,16 +40,14 @@ export class UsersController {
     return this.usersService.updateUserById(userId, updateUserDto);
   }
 
-  // ADMIN dan RECRUITER bisa lihat semua user
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
+  @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get()
   async findAllUsers(@Query() query: QueryUserDto) {
     return await this.usersService.findAllUsers(query);
   }
 
-  // ADMIN dan RECRUITER bisa akses user by ID
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
+  @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')
   findUserById(@Param('id') id: string) {

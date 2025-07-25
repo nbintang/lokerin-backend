@@ -5,13 +5,13 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { MailModule } from './common/mail/mail.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyModule } from './modules/company/company.module';
-import { RoleModule } from './modules/role/role.module';
 import { CvModule } from './modules/cv/cv.module';
-import { JobModule } from './modules/job/job.module';
+import { JobModule } from './modules/jobs/job.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { RecruiterModule } from './modules/recruiters/recruiter.module';
+import { JobApplicationModule } from './modules/job-applications/job-application.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 
 @Module({
   imports: [
@@ -19,13 +19,13 @@ import { RecruiterModule } from './modules/recruiters/recruiter.module';
     MailModule,
     LoggerModule,
     UsersModule,
-    CompanyModule,
-    RoleModule,
     CvModule,
     JobModule,
     AuthModule,
     CloudinaryModule,
     RecruiterModule,
+    JobApplicationModule,
+    CompaniesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

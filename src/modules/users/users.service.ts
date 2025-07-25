@@ -94,10 +94,18 @@ export class UsersService {
     const user = this.prisma.user.update({
       where: { id },
       data: { ...updateUserDto },
+      omit: { password: true, role: true },
     });
     return user;
   }
 
+  updatePassword(id: string, password: string) {
+    const user = this.prisma.user.update({
+      where: { id },
+      data: { password },
+    });
+    return user;
+  }
   updateVerifiedById(id: string) {
     const user = this.prisma.user.update({
       where: { id },
