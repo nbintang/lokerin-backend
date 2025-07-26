@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AccessControlService } from '../shared/access-control.service';
 
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { UserRole } from 'src/modules/users/enum/user.enum';
+import { UserRole } from '../../users/enum/user.enum';
 
 @Injectable()
 export class RoleGuard implements CanActivate {

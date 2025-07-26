@@ -10,12 +10,12 @@ import {
   Patch,
 } from '@nestjs/common';
 import { RecruitersService } from './recruiter.service';
-import { AccessTokenGuard } from 'src/modules/auth/guards/access-token.guard';
+import { AccessTokenGuard } from '../../modules/auth/guards/access-token.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { RoleGuard } from 'src/modules/auth/guards/role.guard';
-import { EmailVerifiedGuard } from 'src/modules/auth/guards/email-verified.guard';
-import { UserRole } from 'src/modules/users/enum/user.enum';
-import { QueryUserDto } from 'src/modules/users/dto/query-user.dto';
+import { RoleGuard } from '../../modules/auth/guards/role.guard';
+import { EmailVerifiedGuard } from '../../modules/auth/guards/email-verified.guard';
+import { UserRole } from '../../modules/users/enum/user.enum';
+import { QueryUserDto } from '../../modules/users/dto/query-user.dto';
 import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
 import { Request } from 'express';
 

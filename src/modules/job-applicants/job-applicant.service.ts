@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryUserDto } from '../users/dto/query-user.dto';
 import { JobApplicationStatus } from './enum/job-application.enum';
 

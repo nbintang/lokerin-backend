@@ -1,7 +1,7 @@
-// src/modules/recruiters/dto/create-recruiter-profile.dto.ts
+// ../../recruiters/dto/create-recruiter-profile.dto.ts
 
 import { IsString, IsUrl, IsUUID, Length } from 'class-validator';
-import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
+import { CreateUserDto } from '../../users/dto/create-user.dto';
 
 export class CreateRecruiterProfileDto extends CreateUserDto {
   @IsString()

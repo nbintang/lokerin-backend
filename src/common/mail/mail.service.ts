@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { UserJwtPayload } from 'src/modules/auth/strategies/access-token.strategy';
+import { UserJwtPayload } from '../../modules/auth/strategies/access-token.strategy';
 
 interface UserInfo {
   name: string;

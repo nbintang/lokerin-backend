@@ -1,8 +1,8 @@
-// src/modules/recruiters/recruiters.service.ts
+// ../../recruiters/recruiters.service.ts
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/common/prisma/prisma.service';
-import { QueryUserDto } from 'src/modules/users/dto/query-user.dto';
-import { UserRole } from 'src/modules/users/enum/user.enum';
+import { PrismaService } from '../../common/prisma/prisma.service';
+import { QueryUserDto } from '../../modules/users/dto/query-user.dto';
+import { UserRole } from '../../modules/users/enum/user.enum';
 import { CreateRecruiterProfileDto } from './dto/create-recruiter.dto';
 import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
 
