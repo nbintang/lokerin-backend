@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { firstValueFrom } from 'rxjs';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 export interface JobMatchingAPIResponse {
