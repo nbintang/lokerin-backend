@@ -13,4 +13,8 @@ export class QueryJobDto {
   @IsInt()
   @Min(1)
   limit?: number;
+
+  @IsOptional()
+  @Type(() => String)
+  name?: string;
 }

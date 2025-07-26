@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/user/create-user.dto';
-import { UpdateUserDto } from './dto/user/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { QueryUserDto } from './dto/query-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -44,9 +44,6 @@ export class UsersService {
       skip,
       take,
       omit: { password: true },
-      include: {
-        recruiterProfile: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -64,13 +61,14 @@ export class UsersService {
     };
   }
 
-  findUserById(id: string) {
-    const user = this.prisma.user.findUnique({
+  async findUserById(id: string) {
+    const user = await this.prisma.user.findUnique({
       where: {
         id: id,
       },
       omit: { password: true },
     });
+    await this.prisma.jobApplication.findMany({ where: { userId: id } });
     return user;
   }
   findUserByEmail(email: string) {
@@ -111,8 +109,9 @@ export class UsersService {
     return user;
   }
   remove(id: string) {
-    return this.prisma.user.delete({
+    this.prisma.user.delete({
       where: { id },
     });
+    return { message: 'User deleted successfully' };
   }
 }

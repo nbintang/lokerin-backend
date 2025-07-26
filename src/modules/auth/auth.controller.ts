@@ -13,13 +13,10 @@ import {
 import { AuthService, JwtTokenResponse } from './auth.service';
 import { Request, Response } from 'express';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { AccessTokenGuard } from './guards/access-token.guard';
-import { Roles } from './decorators/roles.decorator';
-import { RoleGuard } from './guards/role.guard';
-import { CreateUserDto } from '../users/dto/user/create-user.dto';
-import { UserRole } from '../users/enum/user.enum';
 import { AuthDto } from './dto/create-auth.dto';
 import { CreateRecruiterProfileDto } from '../recruiters/dto/create-recruiter.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -100,8 +97,6 @@ export class AuthController {
     return await this.authService.forgotPassword(email);
   }
   @Post('resend-verification')
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
-  @UseGuards(AccessTokenGuard, RoleGuard)
   async resendVerification(@Body() body: { email: string }) {
     return await this.authService.resendVerification(body.email);
   }

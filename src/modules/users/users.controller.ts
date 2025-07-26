@@ -9,7 +9,7 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/user/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { UserRole } from './enum/user.enum';
@@ -53,18 +53,8 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')
-  findUserById(@Param('id') id: string) {
-    return this.usersService.findUserById(id);
-  }
-
-  @Roles(UserRole.ADMINISTRATOR)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Patch(':id')
-  async updateUserById(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return await this.usersService.updateUserById(id, updateUserDto);
+  async findUserById(@Param('id') id: string) {
+    return await this.usersService.findUserById(id);
   }
 
   // Hapus user by ID — hanya admin

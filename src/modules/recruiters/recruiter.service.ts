@@ -26,6 +26,7 @@ export class RecruitersService {
       },
       skip,
       take,
+      omit: { roleId: true, userId: true, companyId: true },
     });
     return recruiters;
   }
@@ -83,11 +84,7 @@ export class RecruitersService {
         company: true,
         position: true,
       },
-    });
-  }
-  async findRecruiterById(id: string) {
-    return await this.prisma.recruiterProfile.findUnique({
-      where: { id },
+      omit: { roleId: true, userId: true, companyId: true },
     });
   }
   async updateRecruiterByUserId(
@@ -112,13 +109,35 @@ export class RecruitersService {
         },
       },
       omit: { password: true, role: true },
+      include: {
+        recruiterProfile: {
+          include: {
+            position: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          omit: { userId: true, roleId: true, companyId: true },
+        },
+      },
     });
     return user;
   }
 
   async deleteRecruiter(id: string) {
-    return await this.prisma.recruiterProfile.delete({
+    const recruiter = await this.prisma.recruiterProfile.delete({
       where: { id },
     });
+    const user = await this.prisma.user.update({
+      where: { id: recruiter.userId },
+      data: { role: UserRole.MEMBER },
+      omit: { password: true },
+    });
+    return {
+      message: 'Recruiter deleted successfully',
+      user,
+    };
   }
 }

@@ -20,12 +20,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enum/user.enum';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { Request } from 'express';
-@UseGuards(AccessTokenGuard)
+
 @Controller('companies')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
+
   @Roles(UserRole.ADMINISTRATOR)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Post()
   async create(
     @Req() req: Request,
@@ -35,31 +36,35 @@ export class CompaniesController {
     return await this.companiesService.createCompany(createCompanyDto, userId);
   }
 
-  @UseGuards(AccessTokenGuard)
-  @UseGuards(EmailVerifiedGuard)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Get()
-  findCompanies(@Query() query: QueryCompanyDto) {
-    return this.companiesService.findCompanies(query);
+  async findCompanies(@Query() query: QueryCompanyDto) {
+    return await this.companiesService.findCompanies(query);
   }
 
-  @Roles(UserRole.ADMINISTRATOR)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @UseGuards(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.companiesService.findCompaniesById(id);
+  async findOne(@Param('id') id: string) {
+    return await this.companiesService.findCompaniesById(id);
   }
 
   @Roles(UserRole.ADMINISTRATOR)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companiesService.update(+id, updateCompanyDto);
+  async updateCompany(
+    @Param('id') id: string,
+    @Body() updateCompanyDto: UpdateCompanyDto,
+  ) {
+    return await this.companiesService.updateCompanyById(id, updateCompanyDto);
   }
 
   @Roles(UserRole.ADMINISTRATOR)
-  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companiesService.remove(+id);
+  async removeCompany(@Param('id') id: string) {
+    return await this.companiesService.removeCompany(id);
   }
 }

@@ -49,7 +49,7 @@ model RecruiterProfile {
   companyId String   @map("company_id") @db.Uuid
   about     String
   position  Role     @relation(fields: [roleId], references: [id])
-  user      User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users_recruiter_profile")
+  user      User     @relation("users_recruiter_profile", fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_users_recruiter_profile")
   company   Company  @relation(fields: [companyId], references: [id], map: "fk_companies_recruiter_profile", onDelete: Cascade)
   roleId    String   @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
@@ -67,7 +67,7 @@ model Company {
   logoUrl          String             @map("logo_url")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
-  user             User               @relation("users_companies", fields: [createdBy], references: [id], map: "fk_users_companies")
+  user             User               @relation("users_companies", onDelete: Cascade, fields: [createdBy], references: [id])
   jobs             Job[]
   recruiterProfile RecruiterProfile[]
 
@@ -99,7 +99,7 @@ model Job {
   applications JobApplication[]
   company      Company          @relation(fields: [companyId], references: [id], map: "fk_companies_jobs", onDelete: Cascade)
   role         Role             @relation(fields: [roleId], references: [id], map: "fk_roles_jobs")
-  user         User             @relation("users_posted_jobs", fields: [postedBy], references: [id], map: "fk_users_posted_jobs")
+  user         User             @relation("users_posted_jobs", onDelete: Cascade, fields: [postedBy], references: [id])
 
   @@map("jobs")
 }
@@ -113,7 +113,7 @@ model JobApplication {
   updatedAt DateTime          @updatedAt @map("updated_at")
 
   job  Job  @relation(fields: [jobId], references: [id], map: "fk_job_applications_job")
-  user User @relation("users_applications", fields: [userId], references: [id], map: "fk_users_applications")
+  user User @relation("users_applications", onDelete: Cascade, fields: [userId], references: [id])
 
   @@map("job_applications")
 }

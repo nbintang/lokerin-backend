@@ -1,26 +1,78 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { PrismaService } from 'src/common/prisma/prisma.service';
+import { QueryRoleDto } from './dto/query-role.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RolesService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+  constructor(private prisma: PrismaService) {}
+  async createRole(createRoleDto: CreateRoleDto) {
+    return await this.prisma.role.upsert({
+      where: {
+        name: createRoleDto.name,
+      },
+      update: {},
+      create: {
+        name: createRoleDto.name,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all roles`;
+  async findAllRoleWithUsers(query: QueryRoleDto) {
+    const page = +(query.page || 1);
+    const limit = +(query.limit || 10);
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const where: Prisma.RoleWhereInput = {
+      ...(query.name && {
+        name: { contains: query.name, mode: 'insensitive' },
+      }),
+    };
+    const roles = await this.prisma.role.findMany({
+      where,
+      include: {
+        RecruiterProfile: true,
+      },
+      skip,
+      take,
+    });
+    const rolesCount = await this.prisma.role.count({ where });
+    return {
+      roles,
+      page,
+      limit,
+      total: rolesCount,
+    };
+  }
+  async findAllRoles(query: QueryRoleDto) {
+    const page = +(query.page || 1);
+    const limit = +(query.limit || 10);
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const where: Prisma.RoleWhereInput = {
+      ...(query.name && {
+        name: { contains: query.name, mode: 'insensitive' },
+      }),
+    };
+    const roles = await this.prisma.role.findMany({
+      where,
+      skip,
+      take,
+    });
+    const rolesCount = await this.prisma.role.count({ where });
+    return {
+      roles,
+      page,
+      limit,
+      total: rolesCount,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
-  }
-
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  async removeRole(id: string) {
+    await this.prisma.role.delete({
+      where: { id },
+    });
+    return { message: 'Role deleted successfully' };
   }
 }

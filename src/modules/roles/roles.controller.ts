@@ -1,34 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { QueryRoleDto } from './dto/query-role.dto';
+import { RoleGuard } from '../auth/guards/role.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/enum/user.enum';
 
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.create(createRoleDto);
+  async createRole(@Body() createRoleDto: CreateRoleDto) {
+    return await this.rolesService.createRole(createRoleDto);
+  }
+  @Roles(UserRole.ADMINISTRATOR)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @Get('/users')
+  async findAllRoleWithUsers(@Query() query: QueryRoleDto) {
+    return await this.rolesService.findAllRoleWithUsers(query);
   }
 
   @Get()
-  findAll() {
-    return this.rolesService.findAll();
+  async findRoles(@Query() query: QueryRoleDto) {
+    return await this.rolesService.findAllRoles(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.rolesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.rolesService.update(+id, updateRoleDto);
-  }
-
+  @Roles(UserRole.ADMINISTRATOR)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.rolesService.remove(+id);
+  async removeRole(@Param('id') id: string) {
+    return await this.rolesService.removeRole(id);
   }
 }

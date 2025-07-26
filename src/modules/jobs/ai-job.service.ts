@@ -63,6 +63,7 @@ export class AiJobService {
         contentType: file.mimetype,
       });
       form.append('job_data', JSON.stringify(jobData));
+      form.append('min_score', '0.38');
       const response = await firstValueFrom(
         this.httpService.post<JobMatchingAPIResponse | null>(
           `${this.MODEL_URL}/recommend-jobs`,

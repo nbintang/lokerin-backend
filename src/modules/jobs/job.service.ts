@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { QueryJobDto } from './dto/query-job.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class JobService {
@@ -10,18 +11,30 @@ export class JobService {
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
     const take = limit;
+    const where: Prisma.JobWhereInput = {
+      ...(query.name && {
+        title: { contains: query.name, mode: 'insensitive' },
+      }),
+    };
     const jobs = await this.prisma.job.findMany({
+      where,
       skip,
       take,
       include: {
-        company: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
+          },
+        },
         role: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
-    const jobsCount = await this.prisma.job.count();
+    const jobsCount = await this.prisma.job.count({ where });
     return {
       jobs,
       page,

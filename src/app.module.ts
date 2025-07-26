@@ -9,10 +9,9 @@ import { JobModule } from './modules/jobs/job.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { RecruiterModule } from './modules/recruiters/recruiter.module';
-import { JobApplicationModule } from './modules/job-applications/job-application.module';
+import { JobApplicantModule } from './modules/job-applicants/job-applicant.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { RolesModule } from './modules/roles/roles.module';
-
 @Module({
   imports: [
     PrismaModule,
@@ -23,7 +22,7 @@ import { RolesModule } from './modules/roles/roles.module';
     AuthModule,
     CloudinaryModule,
     RecruiterModule,
-    JobApplicationModule,
+    JobApplicantModule,
     CompaniesModule,
     RolesModule,
   ],

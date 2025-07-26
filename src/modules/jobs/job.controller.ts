@@ -34,6 +34,7 @@ export class JobController {
   async findJobById(@Param('id') id: string) {
     return await this.jobService.findJobById(id);
   }
+
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Roles(UserRole.MEMBER)
   @Post('recommend-jobs')

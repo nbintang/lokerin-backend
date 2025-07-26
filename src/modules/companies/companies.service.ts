@@ -52,7 +52,12 @@ export class CompaniesService {
   async findCompaniesById(id: string) {
     const companies = await this.prisma.company.findUniqueOrThrow({
       where: { id },
-      include: { jobs: true, recruiterProfile: true },
+      include: {
+        jobs: {
+          include: { role: { select: { id: true, name: true } } },
+          omit: { companyId: true, roleId: true },
+        },
+      },
     });
     return companies;
   }
@@ -67,7 +72,9 @@ export class CompaniesService {
     return company;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} company`;
+  async removeCompany(id: string) {
+    return this.prisma.company.delete({
+      where: { id },
+    });
   }
 }

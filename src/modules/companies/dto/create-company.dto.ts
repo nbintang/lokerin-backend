@@ -1,6 +1,7 @@
+import { Prisma } from '@prisma/client';
 import { IsString, IsUrl, Length } from 'class-validator';
 
-export class CreateCompanyDto {
+export class CreateCompanyDto implements Prisma.CompanyCreateWithoutUserInput {
   @IsString()
   @Length(2, 50)
   name: string;

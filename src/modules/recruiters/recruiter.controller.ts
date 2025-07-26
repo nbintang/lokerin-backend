@@ -25,6 +25,9 @@ export class RecruitersController {
   constructor(private readonly recruitersService: RecruitersService) {}
 
   // as Recruiter
+
+  @Roles(UserRole.RECRUITER)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
   @UseGuards(EmailVerifiedGuard)
   @Get('profile')
   async getRecruiterProfile(@Req() req: Request) {
@@ -32,7 +35,8 @@ export class RecruitersController {
     return await this.recruitersService.findRecruiterByUserId(userId);
   }
 
-  @UseGuards(EmailVerifiedGuard)
+  @Roles(UserRole.RECRUITER)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch('profile')
   async updateRecruiterProfile(
     @Req() req: Request,
@@ -54,7 +58,7 @@ export class RecruitersController {
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')
   async getRecruiterById(@Param('id') id: string) {
-    return await this.recruitersService.findRecruiterById(id);
+    return await this.recruitersService.findRecruiterByUserId(id);
   }
 
   @Roles(UserRole.ADMINISTRATOR)
