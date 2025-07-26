@@ -11,6 +11,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { RecruiterModule } from './modules/recruiters/recruiter.module';
 import { JobApplicationModule } from './modules/job-applications/job-application.module';
 import { CompaniesModule } from './modules/companies/companies.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CompaniesModule } from './modules/companies/companies.module';
     RecruiterModule,
     JobApplicationModule,
     CompaniesModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

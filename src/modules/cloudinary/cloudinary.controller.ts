@@ -35,9 +35,9 @@ export class CloudinaryController {
 
     return {
       message: `Image uploaded to ${folder} successfully`,
-         secureUrl: secure_url,
-        publicId: public_id,
-        createdAt: created_at,
+      secureUrl: secure_url,
+      publicId: public_id,
+      createdAt: created_at,
     };
   }
 
@@ -60,9 +60,9 @@ export class CloudinaryController {
 
     return {
       message: `Document uploaded to ${folder} successfully`,
-   secureUrl: secure_url,
-        publicId: public_id,
-        createdAt: created_at,
+      secureUrl: secure_url,
+      publicId: public_id,
+      createdAt: created_at,
     };
   }
 }
