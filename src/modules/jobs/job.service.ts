@@ -87,6 +87,7 @@ export class JobService {
         },
         role: true,
       },
+      omit: { roleId: true, companyId: true },
       orderBy: {
         createdAt: 'desc',
       },
@@ -104,6 +105,7 @@ export class JobService {
     const job = await this.prisma.job.findUniqueOrThrow({
       where: { id: jobId },
       include: { company: true, role: true },
+      omit: { roleId: true, companyId: true },
     });
     return job;
   }
