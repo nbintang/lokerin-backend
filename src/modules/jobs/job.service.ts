@@ -70,6 +70,7 @@ export class JobService {
       ...(query.name && {
         title: { contains: query.name, mode: 'insensitive' },
       }),
+      ...(query.companyId && { companyId: query.companyId }),
     };
     const jobs = await this.prisma.job.findMany({
       where,

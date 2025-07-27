@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, Min } from 'class-validator';
+import { IsOptional, IsInt, Min, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QueryJobDto {
@@ -17,4 +17,8 @@ export class QueryJobDto {
   @IsOptional()
   @Type(() => String)
   name?: string;
+
+  @IsUUID()
+  @IsOptional()
+  companyId: string;
 }
