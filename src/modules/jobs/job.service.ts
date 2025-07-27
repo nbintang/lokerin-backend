@@ -2,10 +2,65 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryJobDto } from './dto/query-job.dto';
 import { Prisma } from '@prisma/client';
+import { CreateJobDto } from './dto/create-job.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Injectable()
 export class JobService {
   constructor(private prisma: PrismaService) {}
+
+  async createJob(data: CreateJobDto, userId: string) {
+    const companyByRecruiterProfile =
+      await this.prisma.recruiterProfile.findUniqueOrThrow({
+        where: { userId },
+        select: {
+          companyId: true,
+        },
+      });
+    return await this.prisma.job.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        role: {
+          connectOrCreate: {
+            where: { name: data.role },
+            create: { name: data.role },
+          },
+        },
+        company: {
+          connect: {
+            id: companyByRecruiterProfile.companyId,
+          },
+        },
+        salaryRange: data.salaryRange,
+        user: { connect: { id: userId } },
+      },
+      omit: { roleId: true, companyId: true },
+      include: {
+        role: { select: { id: true, name: true } },
+        company: { select: { id: true, name: true } },
+      },
+    });
+  }
+
+  async updateJob(id: string, data: UpdateJobDto) {
+    return await this.prisma.job.update({
+      where: { id },
+      data: {
+        title: data.title,
+        description: data.description,
+        salaryRange: data.salaryRange,
+        location: data.location,
+      },
+      omit: { roleId: true, companyId: true },
+      include: {
+        role: { select: { id: true, name: true } },
+        company: { select: { id: true, name: true } },
+      },
+    });
+  }
+
   async findJobs(query: QueryJobDto) {
     const page = +(query.page || 1);
     const limit = +(query.limit || 10);
@@ -49,5 +104,10 @@ export class JobService {
       include: { company: true, role: true },
     });
     return job;
+  }
+
+  async deleteJob(jobId: string) {
+    await this.prisma.job.delete({ where: { id: jobId } });
+    return { message: 'Job deleted successfully' };
   }
 }
