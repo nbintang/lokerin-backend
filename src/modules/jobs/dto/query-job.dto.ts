@@ -21,4 +21,8 @@ export class QueryJobDto {
   @IsUUID()
   @IsOptional()
   companyId: string;
+
+  @IsUUID()
+  @IsOptional()
+  recruiterId: string;
 }
