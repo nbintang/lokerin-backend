@@ -24,5 +24,5 @@ export class QueryJobDto {
 
   @IsUUID()
   @IsOptional()
-  recruiterId: string;
+  postedBy: string;
 }
