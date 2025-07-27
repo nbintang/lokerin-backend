@@ -23,9 +23,6 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() body: CreateUserDto, @Req() request: Request) {
     try {
-      const existedTokenCookie = request.cookies.refreshToken;
-      const user = await this.authService.decodeToken(existedTokenCookie);
-      if (user) throw new UnauthorizedException('You are already logged in!');
       await this.authService.signUp(body);
       return {
         message: 'Success!, Please check your email for the verification link',
@@ -43,9 +40,6 @@ export class AuthController {
     @Req() request: Request,
   ) {
     try {
-      const existedTokenCookie = request.cookies.refreshToken;
-      const user = await this.authService.decodeToken(existedTokenCookie);
-      if (user) throw new UnauthorizedException('You are already logged in!');
       await this.authService.signUpAsRecruiter(body);
       return {
         message: 'Success!, Please check your email for the verification link',
@@ -122,9 +116,6 @@ export class AuthController {
     @Body() body: { email: string; password: string },
     @Req() request: Request,
   ) {
-    const existedTokenCookie = request.cookies.refreshToken;
-    const user = await this.authService.decodeToken(existedTokenCookie);
-    if (user) throw new UnauthorizedException('You are already logged in!');
     const { accessToken, refreshToken } = await this.authService.signIn(body);
     if (accessToken && refreshToken)
       response.cookie('refreshToken', refreshToken, {
