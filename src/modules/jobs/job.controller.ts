@@ -67,7 +67,7 @@ export class JobController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
-  async recommendJob(@Param('id') id: string) {
+  async deleteJob(@Param('id') id: string) {
     return this.jobService.deleteJob(id);
   }
 }
