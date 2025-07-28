@@ -29,7 +29,7 @@ export class JobApplicantService {
           },
         },
         job: {
-          select: { id: true, title: true },
+          select: { role: { select: { name: true } } },
         },
       },
     });
@@ -55,7 +55,7 @@ export class JobApplicantService {
           },
         },
         job: {
-          select: { id: true, title: true },
+          select: { role: { select: { name: true } } },
         },
       },
       skip,
@@ -110,7 +110,6 @@ export class JobApplicantService {
         job: {
           select: {
             id: true,
-            title: true,
             location: true,
             description: true,
             role: {

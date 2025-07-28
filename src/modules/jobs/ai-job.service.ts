@@ -37,7 +37,11 @@ export class AiJobService {
       const jobs = await this.prisma.job.findMany({
         select: {
           id: true,
-          title: true,
+          role: {
+            select: {
+              name: true,
+            },
+          },
           description: true,
           location: true,
           salaryRange: true,
@@ -53,9 +57,9 @@ export class AiJobService {
       }
       const jobData = jobs.map((job) => ({
         id: job.id.toString(),
-        title: job.title,
+        title: job.role.name,
         location: job.location,
-        description: `${job.title}. ${job.description}.`,
+        description: `${job.role.name}. ${job.description}.`,
       }));
       const form = new FormData();
       form.append('resume', file.buffer, {
@@ -80,7 +84,11 @@ export class AiJobService {
             where: { id: result.id },
             select: {
               id: true,
-              title: true,
+              role: {
+                select: {
+                  name: true,
+                },
+              },
               description: true,
               location: true,
               salaryRange: true,

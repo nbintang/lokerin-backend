@@ -89,7 +89,6 @@ model Job {
   id           String           @id @default(uuid()) @db.Uuid
   companyId    String           @map("company_id") @db.Uuid
   roleId       String           @map("role_id") @db.Uuid
-  title        String
   description  String
   location     String
   salaryRange  String           @map("salary_range")

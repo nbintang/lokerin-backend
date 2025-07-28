@@ -666,21 +666,20 @@ async function main() {
     ];
 
     const salaryRanges = [
-      '3M - 5M',
-      '4M - 7M',
-      '5M - 8M',
-      '6M - 10M',
-      '7M - 12M',
-      '8M - 15M',
-      '10M - 18M',
-      '12M - 20M',
-      '15M - 25M',
-      '20M - 35M',
+      '2000000 - 5000000',
+      '4000000 - 7000000',
+      '5000000 - 8000000',
+      '6000000 - 1000000',
+      '7000000 - 12000000',
+      '8000000 - 15000000',
+      '10000000 - 18000000',
+      '12000000 - 20000000',
+      '15000000 - 25000000',
+      '20000000 - 35000000',
     ];
 
     const job = await prisma.job.create({
       data: {
-        title: role.name,
         description,
         location: faker.helpers.arrayElement(cities),
         salaryRange: faker.helpers.arrayElement(salaryRanges),

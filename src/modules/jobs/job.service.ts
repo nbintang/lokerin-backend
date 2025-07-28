@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryJobDto } from './dto/query-job.dto';
 import { Prisma } from '@prisma/client';
@@ -19,7 +19,6 @@ export class JobService {
       });
     return await this.prisma.job.create({
       data: {
-        title: data.title,
         description: data.description,
         location: data.location,
         role: {
@@ -48,7 +47,6 @@ export class JobService {
     return await this.prisma.job.update({
       where: { id },
       data: {
-        title: data.title,
         description: data.description,
         salaryRange: data.salaryRange,
         location: data.location,
@@ -68,7 +66,7 @@ export class JobService {
     const take = limit;
     const where: Prisma.JobWhereInput = {
       ...(query.name && {
-        title: { contains: query.name, mode: 'insensitive' },
+        role: { name: { contains: query.name, mode: 'insensitive' } },
       }),
       ...(query.companyId && { companyId: query.companyId }),
       ...(query.postedBy && { postedBy: query.postedBy }),
@@ -85,7 +83,7 @@ export class JobService {
             logoUrl: true,
           },
         },
-        role: true,
+        role: { select: { id: true, name: true } },
       },
       omit: { roleId: true, companyId: true },
       orderBy: {
@@ -102,11 +100,29 @@ export class JobService {
   }
 
   async findJobById(jobId: string) {
-    const job = await this.prisma.job.findUniqueOrThrow({
+    const job = await this.prisma.job.findUnique({
       where: { id: jobId },
-      include: { company: true, role: true },
+      include: {
+        company: { omit: { createdBy: true } },
+        role: { select: { id: true, name: true } },
+        user: {
+          select: {
+            recruiterProfile: {
+              select: {
+                position: true,
+              },
+            },
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            avatarUrl: true,
+          },
+        },
+      },
       omit: { roleId: true, companyId: true },
     });
+    if (!job) throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
     return job;
   }
 
