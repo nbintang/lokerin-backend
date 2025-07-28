@@ -21,6 +21,7 @@ export class JobService {
       data: {
         description: data.description,
         location: data.location,
+        salaryRange: data.salaryRange,
         role: {
           connectOrCreate: {
             where: { name: data.role },
@@ -32,7 +33,6 @@ export class JobService {
             id: companyByRecruiterProfile.companyId,
           },
         },
-        salaryRange: data.salaryRange,
         user: { connect: { id: userId } },
       },
       omit: { roleId: true, companyId: true },
@@ -50,6 +50,12 @@ export class JobService {
         description: data.description,
         salaryRange: data.salaryRange,
         location: data.location,
+        role: {
+          connectOrCreate: {
+            where: { name: data.role },
+            create: { name: data.role },
+          },
+        },
       },
       omit: { roleId: true, companyId: true },
       include: {

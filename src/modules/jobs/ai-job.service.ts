@@ -2,7 +2,13 @@ import { HttpService } from '@nestjs/axios';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  LoggerService,
+} from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 export interface JobMatchingAPIResponse {
   resume_preview: string;
@@ -30,6 +36,8 @@ export class AiJobService {
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
   async recommendJobs(file: Express.Multer.File) {
     try {
@@ -75,7 +83,7 @@ export class AiJobService {
           { headers: { ...form.getHeaders() }, timeout: 60000 },
         ),
       );
-      console.log(response);
+      this.logger.log('Classifying:', response.data);
       const results = response.data?.results ?? [];
 
       const enrichedResults = await Promise.all(
@@ -113,7 +121,7 @@ export class AiJobService {
         recommendedJobs: enrichedResults.length,
       };
     } catch (error) {
-      console.log(error);
+      this.logger.error(error);
       throw new BadRequestException('File is required');
     }
   }

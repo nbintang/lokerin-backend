@@ -119,7 +119,7 @@ export class MailService {
     context: Record<string, any>;
   }): Promise<boolean> {
     try {
-      console.log(options.context);
+      this.logger.log(options.context);
       await this.mailerService.sendMail({
         to: options.to,
         subject: options.subject,

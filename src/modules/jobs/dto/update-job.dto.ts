@@ -1,6 +1,3 @@
-import { OmitType, PartialType } from '@nestjs/mapped-types';
 import { CreateJobDto } from './create-job.dto';
 
-export class UpdateJobDto extends PartialType(
-  OmitType(CreateJobDto, ['role']),
-) {}
+export class UpdateJobDto extends CreateJobDto {}

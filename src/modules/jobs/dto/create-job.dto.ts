@@ -1,11 +1,6 @@
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 export class CreateJobDto {
   @IsString()
-  @IsNotEmpty({ message: 'Job title is required' })
-  @Length(2, 50)
-  title: string;
-
-  @IsString()
   @IsNotEmpty({ message: 'Job description is required' })
   @Length(10, 1000)
   description: string;
