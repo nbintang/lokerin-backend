@@ -110,8 +110,8 @@ model JobApplication {
   status    ApplicationStatus @default(APPLIED)
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @updatedAt @map("updated_at")
-
-  job  Job  @relation(fields: [jobId], references: [id], map: "fk_job_applications_job")
+ 
+  job  Job  @relation(fields: [jobId], references: [id], map: "fk_job_applications_job", onDelete: Cascade)
   user User @relation("users_applications", onDelete: Cascade, fields: [userId], references: [id])
 
   @@map("job_applications")
