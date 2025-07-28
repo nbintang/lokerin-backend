@@ -7,7 +7,6 @@ export class CreateJobDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Job location is required' })
-  @Length(2, 50)
   location: string;
 
   @IsString()
