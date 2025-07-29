@@ -64,10 +64,13 @@ export class CloudinaryController {
       folder,
       public_id: exitedPublicId,
     });
-    const downloadUrl = this.cloudinaryService.getDownloadUrl(public_id);
+    // Build your own download-endpoint URL
+    const downloadEndpoint =
+      `${process.env.PROD_BACKEND_URL || 'http://localhost:3000'}` +
+      `/api/upload/document/download?publicId=${encodeURIComponent(public_id)}`;
     return {
       message: `Document uploaded to ${folder} successfully`,
-      secureUrl: downloadUrl,
+      secureUrl: downloadEndpoint,
       publicId: public_id,
       createdAt: created_at,
     };

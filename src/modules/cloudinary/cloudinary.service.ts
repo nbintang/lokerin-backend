@@ -57,11 +57,4 @@ export class CloudinaryService {
   public async getResource(public_id: string, resource_type: 'raw' | 'image') {
     return cloudinary.api.resource(public_id, { resource_type });
   }
-  public getDownloadUrl(publicId: string) {
-    return cloudinary.url(publicId, {
-      resource_type: 'raw',
-      flags: 'attachment',
-      attachment: `${publicId.split('/').pop()}.pdf`,
-    });
-  }
 }
