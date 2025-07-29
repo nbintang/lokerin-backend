@@ -25,6 +25,7 @@ export class JobApplicantService {
             id: true,
             email: true,
             avatarUrl: true,
+            cvUrl: true,
             name: true,
           },
         },
@@ -52,6 +53,7 @@ export class JobApplicantService {
             email: true,
             avatarUrl: true,
             name: true,
+            cvUrl: true,
           },
         },
         job: {
@@ -104,6 +106,7 @@ export class JobApplicantService {
             phone: true,
             avatarUrl: true,
             createdAt: true,
+            cvUrl: true,
             updatedAt: true,
           },
         },
