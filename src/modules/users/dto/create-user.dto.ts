@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsUrl,
   Length,
+  IsNotEmpty,
 } from 'class-validator';
 import { Prisma } from '@prisma/client';
 export class CreateUserDto implements Prisma.UserCreateInput {
@@ -33,4 +34,7 @@ export class CreateUserDto implements Prisma.UserCreateInput {
   @IsOptional()
   @IsUrl({}, { message: 'avatarUrl harus berupa URL yang valid' })
   readonly avatarUrl?: string;
+  @IsNotEmpty({ message: 'Avatar URL is required' })
+  @IsUrl({}, { message: 'avatarUrl harus berupa URL yang valid' })
+  readonly cvUrl?: string;
 }

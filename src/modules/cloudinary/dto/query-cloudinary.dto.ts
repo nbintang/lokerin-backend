@@ -1,18 +1,18 @@
 import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
 import { Transform } from 'class-transformer';
-
-export enum ImageFolder {
-  images_job = 'lokerin',
+export enum CloudinaryFolder {
+  lokerinImage = 'lokerin_image',
+  lokerinCv = 'lokerin_cv',
 }
-export class QueryImageDto {
+export class QueryCloudinaryDto {
   @IsOptional()
   @IsString()
-  @IsUrl({}, { message: 'Invalid image url' })
+  @IsUrl({}, { message: 'Invalid URL' })
   @Transform(({ value }) => value?.trim())
-  'image-url'?: string;
+  existedUrl?: string;
 
-  @IsEnum(ImageFolder, {
-    message: 'folder must be "image"',
+  @IsEnum(CloudinaryFolder, {
+    message: 'folder must be one of "lokerin_image" or "lokerin_cv"',
   })
-  folder: ImageFolder;
+  folder: CloudinaryFolder;
 }

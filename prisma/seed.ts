@@ -542,6 +542,7 @@ async function main() {
           email: faker.internet.email(),
           phone: faker.phone.number({ style: 'human' }),
           password: dummyPassword,
+          cvUrl: `https://res.cloudinary.com/da6hciwjn/image/upload/v1753782607/CV_Ezra_Raditya_Dwi_Anugrah_mvx8l0.pdf`,
           role: 'MEMBER',
           avatarUrl: faker.image.avatar(),
           isVerified: faker.datatype.boolean(0.8), // 80% verified

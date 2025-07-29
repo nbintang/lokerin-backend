@@ -21,7 +21,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('signup')
-  async signup(@Body() body: CreateUserDto, @Req() request: Request) {
+  async signup(@Body() body: CreateUserDto) {
     try {
       await this.authService.signUp(body);
       return {
@@ -35,10 +35,7 @@ export class AuthController {
     }
   }
   @Post('recruiter/signup')
-  async signupAsRecruiter(
-    @Body() body: CreateRecruiterProfileDto,
-    @Req() request: Request,
-  ) {
+  async signupAsRecruiter(@Body() body: CreateRecruiterProfileDto) {
     try {
       await this.authService.signUpAsRecruiter(body);
       return {
@@ -62,13 +59,14 @@ export class AuthController {
         await this.authService.verifyEmailToken({
           token,
         });
-      if (accessToken && refreshToken)
+      if (accessToken && refreshToken) {
         response.cookie('refreshToken', refreshToken, {
           sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
           secure: process.env.NODE_ENV !== 'development',
           httpOnly: true,
           maxAge: 1000 * 60 * 60 * 24,
         });
+      }
       return { message: 'Email verified successfully', data: { accessToken } };
     } catch (error) {
       throw new HttpException(
@@ -116,14 +114,19 @@ export class AuthController {
     @Body() body: { email: string; password: string },
     @Req() request: Request,
   ) {
+    const existedTokenCookie = request.cookies['refreshToken'];
+    if (existedTokenCookie) {
+      throw new UnauthorizedException('User already signed in!');
+    }
     const { accessToken, refreshToken } = await this.authService.signIn(body);
-    if (accessToken && refreshToken)
+    if (accessToken && refreshToken) {
       response.cookie('refreshToken', refreshToken, {
         sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
         secure: process.env.NODE_ENV !== 'development',
         httpOnly: true,
         maxAge: 1000 * 60 * 60 * 24,
       });
+    }
     return {
       message: 'Successfully signed in',
       accessToken,

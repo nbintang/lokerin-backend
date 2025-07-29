@@ -1,9 +1,10 @@
-// ../../recruiters/dto/create-recruiter-profile.dto.ts
-
 import { IsString, IsUrl, IsUUID, Length } from 'class-validator';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
+import { OmitType } from '@nestjs/mapped-types';
 
-export class CreateRecruiterProfileDto extends CreateUserDto {
+export class CreateRecruiterProfileDto extends OmitType(CreateUserDto, [
+  'cvUrl',
+]) {
   @IsString()
   @Length(2, 50)
   position: string;

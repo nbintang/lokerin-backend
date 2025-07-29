@@ -23,9 +23,6 @@ import { Request } from 'express';
 @Controller('recruiters')
 export class RecruitersController {
   constructor(private readonly recruitersService: RecruitersService) {}
-
-  // as Recruiter
-
   @Roles(UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @UseGuards(EmailVerifiedGuard)

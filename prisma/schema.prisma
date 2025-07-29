@@ -32,6 +32,7 @@ model User {
   password         String
   role             UserRole          @default(MEMBER)
   avatarUrl        String?           @map("avatar_url")
+  cvUrl            String?           @map("cv_url")
   isVerified       Boolean?          @default(false) @map("is_verified")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
@@ -110,7 +111,7 @@ model JobApplication {
   status    ApplicationStatus @default(APPLIED)
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @updatedAt @map("updated_at")
- 
+
   job  Job  @relation(fields: [jobId], references: [id], map: "fk_job_applications_job", onDelete: Cascade)
   user User @relation("users_applications", onDelete: Cascade, fields: [userId], references: [id])
 

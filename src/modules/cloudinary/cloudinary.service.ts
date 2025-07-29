@@ -9,18 +9,19 @@ import {
 
 @Injectable()
 export class CloudinaryService {
-  async uploadFile({
+  public async uploadFile({
     file,
     folder,
     public_id,
   }: CloudinaryUploadOptions): Promise<CloudinaryResponse> {
-    const optimizedFile = await this.compressImage(file);
+    const isImage = file.mimetype.startsWith('image/');
+    const buffer = isImage ? await this.compressImage(file) : file.buffer;
     return new Promise<CloudinaryResponse>((resolve, reject) => {
-      const readebleStream = this.bufferToStream(optimizedFile);
+      const readebleStream = this.bufferToStream(buffer);
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder,
-          resource_type: 'image',
+          resource_type: isImage ? 'image' : 'raw',
           public_id,
           overwrite: !!public_id,
           invalidate: !!public_id,
@@ -33,7 +34,7 @@ export class CloudinaryService {
       readebleStream.pipe(uploadStream);
     });
   }
-  extractPublicId(imageUrl: string): string {
+  public extractPublicId(imageUrl: string): string {
     if (!imageUrl) return '';
     const path = imageUrl.split('/').pop();
     if (!path) return '';
@@ -52,5 +53,15 @@ export class CloudinaryService {
     readable.push(buffer);
     readable.push(null);
     return readable;
+  }
+  public async getResource(public_id: string, resource_type: 'raw' | 'image') {
+    return cloudinary.api.resource(public_id, { resource_type });
+  }
+  public getDownloadUrl(publicId: string) {
+    return cloudinary.url(publicId, {
+      resource_type: 'raw',
+      flags: 'attachment',
+      attachment: `${publicId.split('/').pop()}.pdf`,
+    });
   }
 }

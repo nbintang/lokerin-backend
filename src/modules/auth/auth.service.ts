@@ -27,12 +27,12 @@ export class AuthService {
     private recruiterService: RecruitersService,
   ) {}
 
-  hashData(data: string) {
+  private hashData(data: string) {
     return argon2.hash(data);
   }
 
   async decodeToken(token: string) {
-    return this.jwtService.decode(token);
+    return await this.jwtService.decode(token);
   }
 
   private async generateJwtTokens(
@@ -46,7 +46,7 @@ export class AuthService {
         { sub: userId, email, role, verified },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '30s',
+          expiresIn: '1m', // 1 minutes
         },
       ),
       this.jwtService.signAsync(
@@ -65,63 +65,62 @@ export class AuthService {
 
   private async confirmUserEmail(email: string) {
     const user = await this.usersService.findUserByEmail(email);
-    if (user.isVerified)
-      throw new BadRequestException('Email already verified');
+    if (user.isVerified) throw new BadRequestException('User already verified');
     return await this.usersService.verifiedUser(user.id);
   }
-  compareHash(plainText: string, hash: string) {
+
+  private compareHash(plainText: string, hash: string) {
     return argon2.verify(hash, plainText);
   }
 
   async signUp(createUserDto: CreateUserDto) {
-    const [existingUser, existingPhone] = await Promise.all([
+    const [existingUser, existingPhone] = await Promise.allSettled([
       this.usersService.findUserByEmail(createUserDto.email),
       this.usersService.findUserByPhone(createUserDto.phone),
     ]);
-    if (existingUser || existingPhone)
+    const userExists =
+      existingUser.status === 'fulfilled' && existingUser.value;
+    const phoneExists =
+      existingPhone.status === 'fulfilled' && existingPhone.value;
+    if (userExists || phoneExists) {
       throw new BadRequestException('User already exists');
+    }
     const hashedPassword = await this.hashData(createUserDto.password);
     const newUser = await this.usersService.createUser({
-      name: createUserDto.name,
-      email: createUserDto.email,
-      phone: createUserDto.phone,
-      avatarUrl: createUserDto.avatarUrl,
+      ...createUserDto,
       password: hashedPassword,
     });
-    if (newUser)
+    if (newUser) {
       await this.mailService.sendEmailConfirmation({
         email: newUser.email,
         name: newUser.name,
         id: newUser.id,
       });
+    }
   }
   async signUpAsRecruiter(createRecruiterDto: CreateRecruiterProfileDto) {
-    const [existingUser, existingPhone] = await Promise.all([
+    const [existingUser, existingPhone] = await Promise.allSettled([
       this.usersService.findUserByEmail(createRecruiterDto.email),
       this.usersService.findUserByPhone(createRecruiterDto.phone),
     ]);
-    if (existingUser || existingPhone)
-      throw new BadRequestException('User already exists');
+    const userExists =
+      existingUser.status === 'fulfilled' && existingUser.value;
+    const phoneExists =
+      existingPhone.status === 'fulfilled' && existingPhone.value;
+    if (userExists || phoneExists) {
+      throw new BadRequestException('User Already exists');
+    }
     const hashedPassword = await this.hashData(createRecruiterDto.password);
     const newRecruiter = await this.recruiterService.createUserWithRecruiter({
-      about: createRecruiterDto.about,
-      companyId: createRecruiterDto.companyId,
-      position: createRecruiterDto.position,
-      website: createRecruiterDto.website,
-      name: createRecruiterDto.name,
-      email: createRecruiterDto.email,
-      phone: createRecruiterDto.phone,
-      avatarUrl: createRecruiterDto.avatarUrl,
+      ...createRecruiterDto,
       password: hashedPassword,
     });
-    if (newRecruiter)
+    if (newRecruiter) {
       await this.mailService.sendEmailConfirmation({
-        email: newRecruiter.user.email,
-        name: newRecruiter.user.name,
-        id: newRecruiter.user.id,
+        ...newRecruiter.user,
       });
+    }
   }
-
   async verifyEmailToken({
     token,
   }: {
@@ -147,11 +146,9 @@ export class AuthService {
     password: string;
   }): Promise<JwtTokenResponse> {
     const user = await this.usersService.findUserByEmail(email);
-    if (!user)
-      throw new UnauthorizedException('User is not registered with us');
+    if (!user) throw new UnauthorizedException('User is not registered');
     const isPasswordValid = await this.compareHash(password, user.password);
-    if (!isPasswordValid)
-      throw new UnauthorizedException('Password is incorrect');
+    if (!isPasswordValid) throw new UnauthorizedException('Incorrect password');
     const { accessToken, refreshToken } = await this.generateJwtTokens(
       user.id,
       user.email,
@@ -181,15 +178,11 @@ export class AuthService {
   }
   async resendVerification(email: string) {
     const user = await this.usersService.findUserByEmail(email);
-    if (user.isVerified)
-      throw new BadRequestException('Email already verified');
+    if (user.isVerified) throw new BadRequestException('User already verified');
     if (!user) throw new NotFoundException('User not found');
     await this.mailService.sendEmailConfirmation({
-      name: user.name,
-      email: user.email,
-      id: user.id,
+      ...user,
     });
-
     return {
       message: 'Email sent successfully',
     };
@@ -199,9 +192,7 @@ export class AuthService {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
     await this.mailService.sendPasswordReset({
-      name: user.name,
-      email: user.email,
-      id: user.id,
+      ...user,
     });
     return {
       message: 'Email sent successfully',
