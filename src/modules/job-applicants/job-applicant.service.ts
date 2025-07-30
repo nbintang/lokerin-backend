@@ -13,7 +13,7 @@ export class JobApplicantService {
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
     const take = limit;
-    const applyers = await this.prisma.jobApplication.findMany({
+    const appliers = await this.prisma.jobApplication.findMany({
       where: {
         job: {
           postedBy: recruiterId,
@@ -40,14 +40,14 @@ export class JobApplicantService {
       },
       omit: { jobId: true, userId: true },
     });
-    const applyersCount = await this.prisma.jobApplication.count({
+    const appliersCount = await this.prisma.jobApplication.count({
       where: { job: { postedBy: recruiterId } },
     });
     return {
-      applyers,
+      appliers,
       page,
       limit,
-      total: applyersCount,
+      total: appliersCount,
     };
   }
   async updateApplicantStatusByRecruiter(
