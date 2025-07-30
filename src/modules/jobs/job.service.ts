@@ -4,6 +4,7 @@ import { QueryJobDto } from './dto/query-job.dto';
 import { Prisma } from '@prisma/client';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { JobApplicationStatus } from '../job-applicants/enum/job-application.enum';
 
 @Injectable()
 export class JobService {
@@ -42,7 +43,30 @@ export class JobService {
       },
     });
   }
-
+  async applyJobApplications(userId: string, id: string) {
+    const job = await this.prisma.job.findUniqueOrThrow({
+      where: { id },
+    });
+    if (!job) throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    return await this.prisma.jobApplication.create({
+      data: { userId, jobId: job.id, status: JobApplicationStatus.APPLIED },
+      omit: { jobId: true, userId: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            avatarUrl: true,
+            cvUrl: true,
+            name: true,
+          },
+        },
+        job: {
+          select: { role: { select: { name: true } } },
+        },
+      },
+    });
+  }
   async updateJob(id: string, data: UpdateJobDto) {
     return await this.prisma.job.update({
       where: { id },

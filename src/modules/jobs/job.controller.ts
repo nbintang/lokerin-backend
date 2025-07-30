@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -37,6 +39,21 @@ export class JobController {
   async createJob(@Req() req: Request, @Body() data: CreateJobDto) {
     const userId = req.user.sub;
     return await this.jobService.createJob(data, userId);
+  }
+  @Roles(UserRole.MEMBER)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @Post('apply/:jobId')
+  async apply(@Req() req: Request, @Param('jobId') jobId: string) {
+    try {
+      const user = req.user;
+      if (user.role !== UserRole.MEMBER) {
+        throw new HttpException('You are not a member', HttpStatus.FORBIDDEN);
+      }
+      const userId = user.sub;
+      return await this.jobService.applyJobApplications(userId, jobId);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
   @Roles(UserRole.RECRUITER)

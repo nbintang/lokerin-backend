@@ -1,40 +1,13 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryUserDto } from '../users/dto/query-user.dto';
 import { JobApplicationStatus } from './enum/job-application.enum';
+import { QueryJobApplicationDto } from './dto/query-job-application.dto';
 
 @Injectable()
 export class JobApplicantService {
   constructor(private readonly prisma: PrismaService) {}
-  async applyJobApplications(userId: string, id: string) {
-    const job = await this.prisma.job.findUniqueOrThrow({
-      where: { id },
-    });
-    if (!job) throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
-    return await this.prisma.jobApplication.create({
-      data: { userId, jobId: job.id, status: JobApplicationStatus.APPLIED },
-      omit: { jobId: true, userId: true },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            avatarUrl: true,
-            cvUrl: true,
-            name: true,
-          },
-        },
-        job: {
-          select: { role: { select: { name: true } } },
-        },
-      },
-    });
-  }
+
   async findApplicants(recruiterId: string, query: QueryUserDto) {
     const page = +(query.page || 1);
     const limit = +(query.limit || 10);
@@ -110,6 +83,90 @@ export class JobApplicantService {
             updatedAt: true,
           },
         },
+        job: {
+          select: {
+            id: true,
+            location: true,
+            description: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                description: true,
+                website: true,
+              },
+            },
+          },
+        },
+      },
+      omit: { jobId: true, userId: true },
+    });
+    return applications;
+  }
+
+  async findAppliedJobsByUserId(userId: string, dto: QueryJobApplicationDto) {
+    const page = +(dto.page || 1);
+    const limit = +(dto.limit || 10);
+    const take = limit;
+    const skip = (page - 1) * limit;
+    const appliedJobs = await this.prisma.jobApplication.findMany({
+      where: {
+        userId,
+        status: dto.status as JobApplicationStatus,
+      },
+      include: {
+        job: {
+          select: {
+            id: true,
+            location: true,
+            description: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                description: true,
+                website: true,
+              },
+            },
+          },
+        },
+      },
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      omit: { jobId: true, userId: true },
+    });
+    const appliedJobCount = await this.prisma.jobApplication.count({
+      where: { userId },
+    });
+    return {
+      appliedJobs,
+      page,
+      limit,
+      total: appliedJobCount,
+    };
+  }
+
+  async findAppliedJobByIdAndUserId(id: string, userId: string) {
+    const applications = await this.prisma.jobApplication.findFirst({
+      where: { AND: [{ id }, { userId }] },
+      include: {
         job: {
           select: {
             id: true,
