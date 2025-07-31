@@ -125,6 +125,9 @@ export class JobService {
             avatarUrl: true,
           },
         },
+        applications: {
+          select: { id: true, jobId: true, status: true, userId: true },
+        },
       },
       omit: { roleId: true, companyId: true },
     });
