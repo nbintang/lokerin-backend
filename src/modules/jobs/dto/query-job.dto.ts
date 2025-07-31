@@ -1,5 +1,6 @@
-import { IsOptional, IsInt, Min, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsInt, Min, IsUUID, IsEnum } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { JobApplicationStatus } from '../../job-applicants/enum/job-application.enum';
 
 export class QueryJobDto {
   @IsOptional()
@@ -25,4 +26,11 @@ export class QueryJobDto {
   @IsUUID()
   @IsOptional()
   postedBy: string;
+
+  @IsEnum(JobApplicationStatus)
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  status: string;
 }

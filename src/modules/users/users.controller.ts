@@ -23,7 +23,7 @@ import { QueryUserDto } from './dto/query-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   // Get profile diri sendiri
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.MEMBER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get('me')
   async findProfile(@Req() request: Request) {
@@ -32,7 +32,7 @@ export class UsersController {
   }
 
   // Update profile sendiri
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
+  @Roles(UserRole.ADMINISTRATOR, UserRole.MEMBER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch('me')
   async updateProfile(

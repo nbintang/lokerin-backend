@@ -26,12 +26,14 @@ import { UserRole } from '../users/enum/user.enum';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Request } from 'express';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { JobMemberService } from './job-member.service';
 
 @Controller('jobs')
 export class JobController {
   constructor(
     private jobService: JobService,
     private aiJobService: AiJobService,
+    private jobMemberService: JobMemberService,
   ) {}
   @Roles(UserRole.RECRUITER)
   @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
@@ -50,7 +52,7 @@ export class JobController {
         throw new HttpException('You are not a member', HttpStatus.FORBIDDEN);
       }
       const userId = user.sub;
-      return await this.jobService.applyJobApplications(userId, jobId);
+      return await this.jobMemberService.applyJobApplications(userId, jobId);
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
@@ -63,13 +65,21 @@ export class JobController {
     return await this.jobService.updateJob(id, data);
   }
 
-  @Get()
-  async findJobs(@Query() query: QueryJobDto) {
+  @Get('public')
+  async findJobsForPublic(@Query() query: QueryJobDto) {
     return await this.jobService.findJobs(query);
   }
 
-  @Get(':id')
-  async findJobById(@Param('id') id: string) {
+  @Roles(UserRole.MEMBER)
+  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
+  @Get()
+  async findJobs(@Query() query: QueryJobDto, @Req() req: Request) {
+    const userId = req.user.sub;
+    return await this.jobMemberService.findJobs(query, userId);
+  }
+
+  @Get('public/:id')
+  async findJobForPublicById(@Param('id') id: string) {
     return await this.jobService.findJobById(id);
   }
 
