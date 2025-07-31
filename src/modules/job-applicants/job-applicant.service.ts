@@ -3,6 +3,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { QueryUserDto } from '../users/dto/query-user.dto';
 import { JobApplicationStatus } from './enum/job-application.enum';
 import { QueryJobApplicationDto } from './dto/query-job-application.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class JobApplicantService {
@@ -116,11 +117,13 @@ export class JobApplicantService {
     const limit = +(dto.limit || 10);
     const take = limit;
     const skip = (page - 1) * limit;
+    const where: Prisma.JobApplicationWhereInput = {
+      userId,
+      ...(dto.status && { status: dto.status as JobApplicationStatus }),
+      ...(dto.jobId && { jobId: dto.jobId }),
+    };
     const appliedJobs = await this.prisma.jobApplication.findMany({
-      where: {
-        userId,
-        status: dto.status as JobApplicationStatus,
-      },
+      where,
       include: {
         job: {
           select: {
@@ -153,7 +156,7 @@ export class JobApplicantService {
       omit: { jobId: true, userId: true },
     });
     const appliedJobCount = await this.prisma.jobApplication.count({
-      where: { userId },
+      where,
     });
     return {
       appliedJobs,
