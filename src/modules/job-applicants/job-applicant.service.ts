@@ -166,9 +166,13 @@ export class JobApplicantService {
     };
   }
 
-  async findAppliedJobByIdAndUserId(id: string, userId: string) {
+  async findAppliedJobByIdAndUserId(
+    id: string,
+    userId: string,
+    { jobId }: QueryJobApplicationDto,
+  ) {
     const applications = await this.prisma.jobApplication.findFirst({
-      where: { AND: [{ id }, { userId }] },
+      where: { AND: [{ id }, { userId }], ...(jobId && { jobId }) },
       include: {
         job: {
           select: {

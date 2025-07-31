@@ -51,13 +51,18 @@ export class JobApplicantController {
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Roles(UserRole.MEMBER)
   @Get('applied/:id')
-  async getAppliedJob(@Req() request: Request, @Param('id') id: string) {
+  async getAppliedJob(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Query() query: QueryJobApplicationDto,
+  ) {
     const user = request.user;
     if (user.role !== UserRole.MEMBER)
       throw new HttpException('You are not a member', HttpStatus.FORBIDDEN);
     return await this.jobApplicationService.findAppliedJobByIdAndUserId(
       id,
       user.sub,
+      query,
     );
   }
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
