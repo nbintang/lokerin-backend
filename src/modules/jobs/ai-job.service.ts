@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { InputAIJobDto } from './dto/input-ai-job.dto';
+import { Prisma } from '@prisma/client';
 
 export interface JobMatchingAPIResponse {
   resume_preview: string;
@@ -44,7 +45,11 @@ export class AiJobService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {}
-  public async recommendJobs(file: Express.Multer.File, input: InputAIJobDto) {
+  public async recommendJobs(
+    file: Express.Multer.File,
+    input: InputAIJobDto,
+    userId: string,
+  ) {
     try {
       if (!file && !input.resumeUrl) {
         throw new BadRequestException(
@@ -62,7 +67,7 @@ export class AiJobService {
       if (input.minScore && (input.minScore < 0.1 || input.minScore > 1.0)) {
         throw new BadRequestException('Min score must be between 0.1 and 1.0');
       }
-      const { jobs, totalJobs } = await this.getJobData();
+      const { jobs, totalJobs } = await this.getJobData(userId);
       if (jobs.length === 0) {
         throw new BadRequestException('No active jobs found');
       }
@@ -127,9 +132,11 @@ export class AiJobService {
     }
   }
 
-  private async getJobData() {
-    const totalJobs = await this.prisma.job.count();
+  private async getJobData(userId: string) {
+    const where: Prisma.JobWhereInput = { applications: { none: { userId } } };
+    const totalJobs = await this.prisma.job.count({ where });
     const jobs = await this.prisma.job.findMany({
+      where,
       select: {
         id: true,
         role: {

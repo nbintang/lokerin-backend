@@ -91,11 +91,17 @@ export class JobController {
   async recommend(
     @UploadedFile() file: Express.Multer.File,
     @Body() input: InputAIJobDto,
+    @Req() req: Request,
   ) {
-    return this.aiJobService.recommendJobs(file, {
-      resumeUrl: input.resumeUrl,
-      minScore: input.minScore,
-    });
+    const userId = req.user.sub;
+    return this.aiJobService.recommendJobs(
+      file,
+      {
+        resumeUrl: input.resumeUrl,
+        minScore: input.minScore,
+      },
+      userId,
+    );
   }
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
