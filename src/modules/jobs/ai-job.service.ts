@@ -6,23 +6,27 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   LoggerService,
 } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { InputAIJobDto } from './dto/input-ai-job.dto';
 
 export interface JobMatchingAPIResponse {
   resume_preview: string;
-  results: Result[];
+  results: JobResult[];
   metadata: Metadata;
 }
 
-export interface Result {
+export interface JobResult {
   id: string;
   title: string;
   score: number;
 }
 
 export interface Metadata {
+  input_type: 'url' | 'file_upload';
+  source: string;
   total_jobs_processed: number;
   matching_jobs: number;
   min_score_threshold: number;
@@ -30,6 +34,7 @@ export interface Metadata {
   cache_hit: boolean;
   model_used: string;
 }
+
 @Injectable()
 export class AiJobService {
   private MODEL_URL = 'https://bxntang-job-recommendation.hf.space';
@@ -39,27 +44,25 @@ export class AiJobService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
   ) {}
-  async recommendJobs(file: Express.Multer.File) {
+  public async recommendJobs(file: Express.Multer.File, input: InputAIJobDto) {
     try {
-      const totalJobs = await this.prisma.job.count();
-      const jobs = await this.prisma.job.findMany({
-        select: {
-          id: true,
-          role: {
-            select: {
-              name: true,
-            },
-          },
-          description: true,
-          location: true,
-          salaryRange: true,
-          company: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
+      if (!file && !input.resumeUrl) {
+        throw new BadRequestException(
+          'Either file or resume URL must be provided',
+        );
+      }
+      if (file && input.resumeUrl) {
+        throw new BadRequestException(
+          'Provide either file or resume URL, not both',
+        );
+      }
+      if (file && !file.originalname?.toLowerCase().endsWith('.pdf')) {
+        throw new BadRequestException('Only PDF files are supported');
+      }
+      if (input.minScore && (input.minScore < 0.1 || input.minScore > 1.0)) {
+        throw new BadRequestException('Min score must be between 0.1 and 1.0');
+      }
+      const { jobs, totalJobs } = await this.getJobData();
       if (jobs.length === 0) {
         throw new BadRequestException('No active jobs found');
       }
@@ -69,13 +72,20 @@ export class AiJobService {
         location: job.location,
         description: `${job.role.name}. ${job.description}.`,
       }));
+
       const form = new FormData();
-      form.append('resume', file.buffer, {
-        filename: file.originalname,
-        contentType: file.mimetype,
-      });
+
+      if (file) {
+        form.append('resume', file.buffer, {
+          filename: file.originalname,
+          contentType: file.mimetype,
+        });
+      } else {
+        form.append('resume_url', input.resumeUrl);
+      }
+
       form.append('job_data', JSON.stringify(jobData));
-      form.append('min_score', '0.38');
+      form.append('min_score', (input.minScore || 0.43).toString());
       const response = await firstValueFrom(
         this.httpService.post<JobMatchingAPIResponse | null>(
           `${this.MODEL_URL}/recommend-jobs`,
@@ -83,46 +93,91 @@ export class AiJobService {
           { headers: { ...form.getHeaders() }, timeout: 60000 },
         ),
       );
-      this.logger.log('Classifying:', response.data);
+
+      this.logger.log('AI Classification Result:', {
+        input_type: response.data?.metadata?.input_type,
+        source: response.data?.metadata?.source,
+        matching_jobs: response.data?.metadata?.matching_jobs,
+        processing_time: response.data?.metadata?.processing_time_seconds,
+      });
       const results = response.data?.results ?? [];
-
-      const enrichedResults = await Promise.all(
-        results.map(async (result) => {
-          const job = await this.prisma.job.findUnique({
-            where: { id: result.id },
-            select: {
-              id: true,
-              role: {
-                select: {
-                  name: true,
-                },
-              },
-              description: true,
-              location: true,
-              salaryRange: true,
-              company: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          });
-          return {
-            ...job,
-            score: result.score,
-            matchPercentage: Math.round(result.score * 100),
-          };
-        }),
-      );
-
+      const enrichedResults = await this.enrichJobResults(results);
       return {
         recommendations: enrichedResults,
         totalJobs,
         recommendedJobs: enrichedResults.length,
+        metadata: response.data?.metadata,
       };
     } catch (error) {
-      this.logger.error(error);
-      throw new BadRequestException('File is required');
+      this.logger.error('Job recommendation failed', {
+        error: error.message,
+        stack: error.stack,
+        input: {
+          hasFile: !!file,
+          hasUrl: !!input.resumeUrl,
+          minScore: input.minScore,
+        },
+      });
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Job recommendation service is currently unavailable',
+      );
     }
+  }
+
+  private async getJobData() {
+    const totalJobs = await this.prisma.job.count();
+    const jobs = await this.prisma.job.findMany({
+      select: {
+        id: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
+        description: true,
+        location: true,
+        salaryRange: true,
+        company: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    return { totalJobs, jobs };
+  }
+
+  private async enrichJobResults(results: JobResult[]) {
+    return await Promise.all(
+      results.map(async (result) => {
+        const job = await this.prisma.job.findUnique({
+          where: { id: result.id },
+          select: {
+            id: true,
+            role: {
+              select: {
+                name: true,
+              },
+            },
+            description: true,
+            location: true,
+            salaryRange: true,
+            company: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+        return {
+          ...job,
+          score: result.score,
+          matchPercentage: Math.round(result.score * 100),
+        };
+      }),
+    );
   }
 }

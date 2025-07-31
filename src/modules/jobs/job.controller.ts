@@ -27,6 +27,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { Request } from 'express';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobMemberService } from './job-member.service';
+import { InputAIJobDto } from './dto/input-ai-job.dto';
 
 @Controller('jobs')
 export class JobController {
@@ -87,8 +88,14 @@ export class JobController {
   @Roles(UserRole.MEMBER)
   @Post('recommend-jobs')
   @UseInterceptors(FileInterceptor('resume'))
-  async recommend(@UploadedFile() file: Express.Multer.File) {
-    return this.aiJobService.recommendJobs(file);
+  async recommend(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() input: InputAIJobDto,
+  ) {
+    return this.aiJobService.recommendJobs(file, {
+      resumeUrl: input.resumeUrl,
+      minScore: input.minScore,
+    });
   }
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
