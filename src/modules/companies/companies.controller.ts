@@ -36,8 +36,6 @@ export class CompaniesController {
     return await this.companiesService.createCompany(createCompanyDto, userId);
   }
 
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER, UserRole.MEMBER)
-  @UseGuards(AccessTokenGuard, RoleGuard, EmailVerifiedGuard)
   @Get()
   async findCompanies(@Query() query: QueryCompanyDto) {
     return await this.companiesService.findCompanies(query);
