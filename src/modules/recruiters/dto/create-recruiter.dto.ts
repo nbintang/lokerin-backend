@@ -9,8 +9,6 @@ export class CreateRecruiterProfileDto extends OmitType(CreateUserDto, [
   @Length(2, 50)
   position: string;
 
-  @IsUrl()
-  website: string;
 
   @IsString()
   @Length(10, 1000)
