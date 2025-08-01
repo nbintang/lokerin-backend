@@ -22,8 +22,7 @@ export const MailConfig: MailerAsyncOptions['useFactory'] = async (
     replyTo: config.get<string>('EMAIL_USER'),
   },
   template: {
-    // Use process.cwd() for production compatibility
-    dir: join(process.cwd(), 'dist', 'common', 'mail', 'templates'),
+    dir: join(__dirname, '..', 'mail', 'templates'),
     adapter: new HandlebarsAdapter(),
     options: {
       strict: true,
