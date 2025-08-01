@@ -35,9 +35,9 @@ export class MailService {
     // const PROD_URL = this.configService.get<string>('PROD_URL');
     this.frontendUrl =
       process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3000/api'
+        ? 'http://localhost:3000'
         : this.configService.get<string>('FRONTEND_URL') ||
-          'http://localhost:3000/api';
+          'http://localhost:3000';
   }
   private dateFormatter(date: Date): string {
     const day = date.getDate();
