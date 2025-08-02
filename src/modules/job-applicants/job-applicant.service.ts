@@ -9,7 +9,7 @@ import { Prisma } from '@prisma/client';
 export class JobApplicantService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findApplicants(recruiterId: string, query: QueryUserDto) {
+  async findApplicantsApplied(recruiterId: string, query: QueryUserDto) {
     const page = +(query.page || 1);
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
@@ -44,6 +44,56 @@ export class JobApplicantService {
     const appliersCount = await this.prisma.jobApplication.count({
       where: { job: { postedBy: recruiterId } },
     });
+    return {
+      appliers,
+      page,
+      limit,
+      total: appliersCount,
+    };
+  }
+
+  async findApplicants(query: QueryJobApplicationDto) {
+    const page = +(query.page || 1);
+    const limit = +(query.limit || 10);
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const where: Prisma.JobApplicationWhereInput = {
+      ...(query.name && {
+        user: {
+          name: { contains: query.name, mode: 'insensitive' },
+        },
+      }),
+      ...(query.recruiterId && {
+        job: {
+          postedBy: query.recruiterId,
+        },
+      }),
+    };
+
+    const appliers = await this.prisma.jobApplication.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            avatarUrl: true,
+            name: true,
+            cvUrl: true,
+          },
+        },
+        job: {
+          select: { id: true, role: { select: { name: true } } },
+        },
+      },
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      omit: { jobId: true, userId: true },
+    });
+    const appliersCount = await this.prisma.jobApplication.count({ where });
     return {
       appliers,
       page,
@@ -200,5 +250,9 @@ export class JobApplicantService {
       omit: { jobId: true, userId: true },
     });
     return applications;
+  }
+
+  async deleteApplicantById(id: string) {
+    return await this.prisma.jobApplication.delete({ where: { id } });
   }
 }

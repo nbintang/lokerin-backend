@@ -9,6 +9,7 @@ import {
   Put,
   HttpException,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { JobApplicantService } from './job-applicant.service';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -26,12 +27,24 @@ import { QueryJobApplicationDto } from './dto/query-job-application.dto';
 export class JobApplicantController {
   constructor(private readonly jobApplicationService: JobApplicantService) {}
 
-  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
+  @Roles(UserRole.RECRUITER)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Get('applicants')
+  async getApplicantsByRecruiter(
+    @Req() request: Request,
+    @Query() query: QueryUserDto,
+  ) {
+    const recruiterId = request.user.sub;
+    return await this.jobApplicationService.findApplicantsApplied(
+      recruiterId,
+      query,
+    );
+  }
+  @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get()
-  async getApplicants(@Req() request: Request, @Query() query: QueryUserDto) {
-    const recruiterId = request.user.sub;
-    return await this.jobApplicationService.findApplicants(recruiterId, query);
+  async getApplicants(@Query() query: QueryJobApplicationDto) {
+    return await this.jobApplicationService.findApplicants(query);
   }
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Roles(UserRole.MEMBER)
@@ -67,14 +80,14 @@ export class JobApplicantController {
   }
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Get(':id')
+  @Get('applicants/:id')
   async getApplicantsById(@Param('id') id: string) {
     return await this.jobApplicationService.findApplicantById(id);
   }
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Put(':id')
+  @Put('applicants/:id')
   async updateApplicantStatus(
     @Param('id') applicantId: string,
     @Query('jobId') jobId: string,
@@ -85,5 +98,12 @@ export class JobApplicantController {
       jobId,
       body.status,
     );
+  }
+
+  @Roles(UserRole.ADMINISTRATOR)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Delete('applicants/:id')
+  async deleteApplicantById(@Param('id') id: string) {
+    return await this.jobApplicationService.deleteApplicantById(id);
   }
 }

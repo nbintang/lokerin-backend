@@ -1,4 +1,11 @@
-import { IsEnum, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 import { JobApplicationStatus } from '../enum/job-application.enum';
 import { Transform, Type } from 'class-transformer';
 
@@ -24,4 +31,12 @@ export class QueryJobApplicationDto {
   @IsUUID()
   @IsOptional()
   jobId: string;
+
+  @IsUUID()
+  @IsOptional()
+  recruiterId: string;
+
+  @IsString()
+  @IsOptional()
+  name: string;
 }

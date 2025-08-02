@@ -98,7 +98,6 @@ export class AiJobService {
           { headers: { ...form.getHeaders() }, timeout: 60000 },
         ),
       );
-
       this.logger.log('AI Classification Result:', {
         input_type: response.data?.metadata?.input_type,
         source: response.data?.metadata?.source,

@@ -94,14 +94,7 @@ export class JobController {
     @Req() req: Request,
   ) {
     const userId = req.user.sub;
-    return this.aiJobService.recommendJobs(
-      file,
-      {
-        resumeUrl: input.resumeUrl,
-        minScore: input.minScore,
-      },
-      userId,
-    );
+    return this.aiJobService.recommendJobs(file, input, userId);
   }
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
