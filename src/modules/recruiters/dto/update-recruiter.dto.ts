@@ -7,7 +7,6 @@ export class UpdateRecruiterProfileDto extends PartialType(
     'password',
     'email',
     'phone',
-    'website',
     'companyId',
   ]),
 ) {}

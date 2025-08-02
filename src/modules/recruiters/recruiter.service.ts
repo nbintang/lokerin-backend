@@ -5,6 +5,7 @@ import { QueryUserDto } from '../../modules/users/dto/query-user.dto';
 import { UserRole } from '../../modules/users/enum/user.enum';
 import { CreateRecruiterProfileDto } from './dto/create-recruiter.dto';
 import { UpdateRecruiterProfileDto } from './dto/update-recruiter.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RecruitersService {
@@ -14,7 +15,15 @@ export class RecruitersService {
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
     const take = limit;
+    const where: Prisma.RecruiterProfileWhereInput = {
+      ...(query.name && {
+        user: {
+          name: { contains: query.name, mode: 'insensitive' },
+        },
+      }),
+    };
     const recruiters = await this.prisma.recruiterProfile.findMany({
+      where,
       include: {
         user: {
           select: {
@@ -28,7 +37,13 @@ export class RecruitersService {
       take,
       omit: { roleId: true, userId: true, companyId: true },
     });
-    return recruiters;
+    const total = await this.prisma.recruiterProfile.count({ where });
+    return {
+      recruiters,
+      total,
+      page,
+      limit,
+    };
   }
 
   async createUserWithRecruiter(dto: CreateRecruiterProfileDto) {

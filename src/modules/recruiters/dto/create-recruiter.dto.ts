@@ -1,4 +1,4 @@
-import { IsString, IsUrl, IsUUID, Length } from 'class-validator';
+import { IsString, IsUUID, Length } from 'class-validator';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { OmitType } from '@nestjs/mapped-types';
 
@@ -8,7 +8,6 @@ export class CreateRecruiterProfileDto extends OmitType(CreateUserDto, [
   @IsString()
   @Length(2, 50)
   position: string;
-
 
   @IsString()
   @Length(10, 1000)
