@@ -61,7 +61,7 @@ export class UsersController {
   @Roles(UserRole.ADMINISTRATOR)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Delete(':id')
-  deleteUserById(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async deleteUserById(@Param('id') id: string) {
+    return await this.usersService.remove(id);
   }
 }

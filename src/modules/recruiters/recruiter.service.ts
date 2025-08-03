@@ -30,12 +30,23 @@ export class RecruitersService {
             id: true,
             email: true,
             name: true,
+            avatarUrl: true,
+          },
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
           },
         },
       },
       skip,
       take,
       omit: { roleId: true, userId: true, companyId: true },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     const total = await this.prisma.recruiterProfile.count({ where });
     return {

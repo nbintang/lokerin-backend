@@ -60,9 +60,13 @@ export class UsersService {
       where: {
         id: id,
       },
+      include: {
+        recruiterProfile: {
+          omit: { roleId: true, userId: true, companyId: true },
+        },
+      },
       omit: { password: true },
     });
-    await this.prisma.jobApplication.findMany({ where: { userId: id } });
     return user;
   }
   findUserByEmail(email: string) {
@@ -102,8 +106,8 @@ export class UsersService {
     });
     return user;
   }
-  remove(id: string) {
-    this.prisma.user.delete({
+  async remove(id: string) {
+    await this.prisma.user.delete({
       where: { id },
     });
     return { message: 'User deleted successfully' };
