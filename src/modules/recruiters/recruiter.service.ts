@@ -103,9 +103,20 @@ export class RecruitersService {
     }
     return null;
   }
-  async findRecruiterByUserId(id: string) {
+  async findRecruiterById(id: string) {
     return await this.prisma.recruiterProfile.findUnique({
       where: { id },
+      include: {
+        user: { omit: { password: true, role: true } },
+        company: true,
+        position: true,
+      },
+      omit: { roleId: true, userId: true, companyId: true },
+    });
+  }
+  async findRecruiterByUserId(id: string) {
+    return await this.prisma.recruiterProfile.findUnique({
+      where: { userId: id },
       include: {
         user: { omit: { password: true, role: true } },
         company: true,

@@ -55,7 +55,7 @@ export class RecruitersController {
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Get(':id')
   async getRecruiterById(@Param('id') id: string) {
-    return await this.recruitersService.findRecruiterByUserId(id);
+    return await this.recruitersService.findRecruiterById(id);
   }
 
   @Roles(UserRole.ADMINISTRATOR)
