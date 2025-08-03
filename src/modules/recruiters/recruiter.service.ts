@@ -25,6 +25,7 @@ export class RecruitersService {
     const recruiters = await this.prisma.recruiterProfile.findMany({
       where,
       include: {
+        position: true,
         user: {
           select: {
             id: true,
@@ -104,7 +105,7 @@ export class RecruitersService {
   }
   async findRecruiterByUserId(id: string) {
     return await this.prisma.recruiterProfile.findUnique({
-      where: { userId: id },
+      where: { id },
       include: {
         user: { omit: { password: true, role: true } },
         company: true,

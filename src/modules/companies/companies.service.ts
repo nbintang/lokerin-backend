@@ -39,6 +39,9 @@ export class CompaniesService {
       where,
       skip,
       take,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     const companiesCount = await this.prisma.company.count({ where });
     return {
@@ -73,8 +76,11 @@ export class CompaniesService {
   }
 
   async removeCompany(id: string) {
-    return this.prisma.company.delete({
+    await this.prisma.company.delete({
       where: { id },
     });
+    return {
+      message: 'Company deleted successfully',
+    };
   }
 }

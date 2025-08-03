@@ -7,7 +7,7 @@ export class CreateCompanyDto implements Prisma.CompanyCreateWithoutUserInput {
   name: string;
 
   @IsString()
-  @Length(10, 200)
+  @Length(10, 1000)
   description: string;
   @IsUrl()
   logoUrl: string;

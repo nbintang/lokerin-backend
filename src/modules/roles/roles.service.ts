@@ -59,6 +59,9 @@ export class RolesService {
       where,
       skip,
       take,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     const rolesCount = await this.prisma.role.count({ where });
     return {
