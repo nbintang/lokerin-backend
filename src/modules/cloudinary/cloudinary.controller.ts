@@ -1,7 +1,10 @@
 import {
   Controller,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   NotFoundException,
+  ParseFilePipe,
   Post,
   Query,
   Res,
@@ -32,7 +35,16 @@ export class CloudinaryController {
     }),
   )
   async uploadImage(
-    @UploadedFile(ParseImageFilePipe) file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    file: Express.Multer.File,
     @Query() query: QueryCloudinaryDto,
   ) {
     const { folder, existedUrl } = query;
