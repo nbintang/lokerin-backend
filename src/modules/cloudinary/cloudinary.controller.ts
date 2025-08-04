@@ -26,7 +26,11 @@ export class CloudinaryController {
     private readonly httpService: HttpService,
   ) {}
   @Post('/image')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
   async uploadImage(
     @UploadedFile(ParseImageFilePipe) file: Express.Multer.File,
     @Query() query: QueryCloudinaryDto,
@@ -50,7 +54,11 @@ export class CloudinaryController {
   }
 
   @Post('/document')
-  @UseInterceptors(FileInterceptor('document'))
+  @UseInterceptors(
+    FileInterceptor('document', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
   async uploadDocument(
     @UploadedFile(ParseDocFilePipe) file: Express.Multer.File,
     @Query() query: QueryCloudinaryDto,
