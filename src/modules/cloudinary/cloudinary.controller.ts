@@ -1,10 +1,7 @@
 import {
   Controller,
-  FileTypeValidator,
   Get,
-  MaxFileSizeValidator,
   NotFoundException,
-  ParseFilePipe,
   Post,
   Query,
   Res,
@@ -13,7 +10,10 @@ import {
 } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ParseDocFilePipe } from './dto/create-cloudinary.dto';
+import {
+  ParseDocFilePipe,
+  ParseImageFilePipe,
+} from './dto/create-cloudinary.dto';
 import { QueryCloudinaryDto } from './dto/query-cloudinary.dto';
 import { HttpService } from '@nestjs/axios';
 import { Response } from 'express';
@@ -32,16 +32,7 @@ export class CloudinaryController {
     }),
   )
   async uploadImage(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /^image\/(jpeg|png|webp)$/ }),
-        ],
-        fileIsRequired: true,
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile(ParseImageFilePipe) file: Express.Multer.File,
     @Query() query: QueryCloudinaryDto,
   ) {
     const { folder, existedUrl } = query;
