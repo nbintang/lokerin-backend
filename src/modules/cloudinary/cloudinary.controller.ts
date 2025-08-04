@@ -13,10 +13,7 @@ import {
 } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ParseDocFilePipe,
-  ParseImageFilePipe,
-} from './dto/create-cloudinary.dto';
+import { ParseDocFilePipe } from './dto/create-cloudinary.dto';
 import { QueryCloudinaryDto } from './dto/query-cloudinary.dto';
 import { HttpService } from '@nestjs/axios';
 import { Response } from 'express';
