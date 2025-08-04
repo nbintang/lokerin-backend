@@ -6,15 +6,17 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+   app.enableCors({
+      origin: ['https://lokerin-frontend.vercel.app', 'http://localhost:3000', 'http://localhost:3001'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      credentials: true,
+   });
+
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.use(compression());
-  app.enableCors({
-    origin: ['https://lokerin-frontend.vercel.app','http://localhost:3000', 'http://localhost:3001'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    credentials: true,
-  });
+ 
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
