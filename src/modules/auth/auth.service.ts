@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
+  LoggerService,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,6 +15,7 @@ import { MailService } from '../../common/mail/mail.service';
 import { RecruitersService } from '../recruiters/recruiter.service';
 import { CreateRecruiterProfileDto } from '../recruiters/dto/create-recruiter.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 export interface JwtTokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -25,8 +28,22 @@ export class AuthService {
     private configService: ConfigService,
     private mailService: MailService,
     private recruiterService: RecruitersService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
 
+  async validateRefreshToken(token: string): Promise<boolean> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+      const user = await this.usersService.findUserById(payload.sub);
+      return !!user;
+    } catch (error) {
+      this.logger.log(error);
+      return false;
+    }
+  }
   private hashData(data: string) {
     return argon2.hash(data);
   }
@@ -46,7 +63,7 @@ export class AuthService {
         { sub: userId, email, role, verified },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '30s', // 30 seconds
+          expiresIn: '15m',
         },
       ),
       this.jwtService.signAsync(
@@ -216,4 +233,3 @@ export class AuthService {
     };
   }
 }
-

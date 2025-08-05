@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   HttpException,
+  Inject,
+  LoggerService,
   Post,
   Query,
   Req,
@@ -16,10 +18,25 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AuthDto } from './dto/create-auth.dto';
 import { CreateRecruiterProfileDto } from '../recruiters/dto/create-recruiter.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
+
+  private setCookieOptions(isProduction: boolean) {
+    return {
+      sameSite: isProduction ? 'none' : ('lax' as 'none' | 'lax'),
+      secure: isProduction,
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    };
+  }
+
   @Post('signup')
   async signup(@Body() body: CreateUserDto) {
     try {
@@ -34,6 +51,7 @@ export class AuthController {
       );
     }
   }
+
   @Post('recruiter/signup')
   async signupAsRecruiter(@Body() body: CreateRecruiterProfileDto) {
     try {
@@ -59,14 +77,16 @@ export class AuthController {
         await this.authService.verifyEmailToken({
           token,
         });
+
       if (accessToken && refreshToken) {
-        response.cookie('refreshToken', refreshToken, {
-          sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
-          secure: process.env.NODE_ENV !== 'development',
-          httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 24,
-        });
+        const isProduction = process.env.NODE_ENV === 'production';
+        response.cookie(
+          'refreshToken',
+          refreshToken,
+          this.setCookieOptions(isProduction),
+        );
       }
+
       return { message: 'Email verified successfully', data: { accessToken } };
     } catch (error) {
       throw new HttpException(
@@ -88,6 +108,7 @@ export class AuthController {
       );
     return await this.authService.forgotPassword(email);
   }
+
   @Post('resend-verification')
   async resendVerification(@Body() body: { email: string }) {
     return await this.authService.resendVerification(body.email);
@@ -115,18 +136,39 @@ export class AuthController {
     @Req() request: Request,
   ) {
     const existedTokenCookie = request.cookies['refreshToken'];
+
+    // FIXED: Validate if refresh token is still valid instead of just checking existence
     if (existedTokenCookie) {
-      throw new UnauthorizedException('User already signed in!');
+      try {
+        const isValidToken =
+          await this.authService.validateRefreshToken(existedTokenCookie);
+        if (isValidToken) {
+          throw new UnauthorizedException('User already signed in!');
+        }
+        response.clearCookie(
+          'refreshToken',
+          this.setCookieOptions(process.env.NODE_ENV === 'production'),
+        );
+      } catch (error) {
+        this.logger.log(error);
+        response.clearCookie(
+          'refreshToken',
+          this.setCookieOptions(process.env.NODE_ENV === 'production'),
+        );
+      }
     }
+
     const { accessToken, refreshToken } = await this.authService.signIn(body);
+
     if (accessToken && refreshToken) {
-      response.cookie('refreshToken', refreshToken, {
-        sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
-        secure: process.env.NODE_ENV !== 'development',
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24,
-      });
+      const isProduction = process.env.NODE_ENV === 'production';
+      response.cookie(
+        'refreshToken',
+        refreshToken,
+        this.setCookieOptions(isProduction),
+      );
     }
+
     return {
       message: 'Successfully signed in',
       accessToken,
@@ -135,11 +177,8 @@ export class AuthController {
 
   @Delete('signout')
   async signout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie('refreshToken', {
-      sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none',
-      secure: process.env.NODE_ENV !== 'development',
-      httpOnly: true,
-    });
+    const isProduction = process.env.NODE_ENV === 'production';
+    response.clearCookie('refreshToken', this.setCookieOptions(isProduction));
     return await this.authService.signout();
   }
 
