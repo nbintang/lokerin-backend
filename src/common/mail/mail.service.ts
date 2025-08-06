@@ -36,7 +36,7 @@ export class MailService {
     this.frontendUrl =
       process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000'
-        : 'https://lokerin-frontend.vercel.app' 
+        : 'https://lokerin-frontend.vercel.app';
   }
   private dateFormatter(date: Date): string {
     const day = date.getDate();

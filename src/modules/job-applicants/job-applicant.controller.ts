@@ -6,21 +6,20 @@ import {
   UseGuards,
   Req,
   Query,
-  Put,
   HttpException,
   HttpStatus,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { JobApplicantService } from './job-applicant.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enum/user.enum';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
-import { QueryUserDto } from '../users/dto/query-user.dto';
 import { Request } from 'express';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { CreateJobApplicationStatusDto } from './dto/create-job-application.dto';
 import { QueryJobApplicationDto } from './dto/query-job-application.dto';
+import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
 
 @UseGuards(AccessTokenGuard)
 @Controller('job-applicants')
@@ -32,7 +31,7 @@ export class JobApplicantController {
   @Get('applicants')
   async getApplicantsByRecruiter(
     @Req() request: Request,
-    @Query() query: QueryUserDto,
+    @Query() query: QueryJobApplicationDto,
   ) {
     const recruiterId = request.user.sub;
     return await this.jobApplicationService.findApplicantsApplied(
@@ -87,16 +86,24 @@ export class JobApplicantController {
 
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
-  @Put('applicants/:id')
+  @Patch('applicants/:id')
   async updateApplicantStatus(
     @Param('id') applicantId: string,
     @Query('jobId') jobId: string,
-    @Body() body: CreateJobApplicationStatusDto,
+    @Body() body: UpdateJobApplicationDto,
   ) {
     return await this.jobApplicationService.updateApplicantStatusByRecruiter(
       applicantId,
       jobId,
       body.status,
+    );
+  }
+  @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
+  @UseGuards(RoleGuard, EmailVerifiedGuard)
+  @Patch('applicants')
+  async updateApplicantStatusBulk(@Body() body: UpdateJobApplicationDto) {
+    return await this.jobApplicationService.updateApplicantStatusBulkByRecruiter(
+      body,
     );
   }
 

@@ -1,25 +1,43 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { QueryUserDto } from '../users/dto/query-user.dto';
 import { JobApplicationStatus } from './enum/job-application.enum';
 import { QueryJobApplicationDto } from './dto/query-job-application.dto';
 import { Prisma } from '@prisma/client';
+import { UserRole } from '../users/enum/user.enum';
+import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
 
 @Injectable()
 export class JobApplicantService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async findApplicantsApplied(recruiterId: string, query: QueryUserDto) {
+  private getWhere(query: QueryJobApplicationDto) {
+    const where: Prisma.JobApplicationWhereInput = {
+      ...(query.name && {
+        user: {
+          name: { contains: query.name, mode: 'insensitive' },
+          role: UserRole.MEMBER,
+        },
+      }),
+    };
+    return where;
+  }
+  async findApplicantsApplied(
+    recruiterId: string,
+    query: QueryJobApplicationDto,
+  ) {
     const page = +(query.page || 1);
     const limit = +(query.limit || 10);
     const skip = (page - 1) * limit;
     const take = limit;
-    const appliers = await this.prisma.jobApplication.findMany({
-      where: {
-        job: {
-          postedBy: recruiterId,
-        },
+
+    const where: Prisma.JobApplicationWhereInput = {
+      job: {
+        postedBy: recruiterId,
       },
+      ...this.getWhere(query),
+    };
+
+    const appliers = await this.prisma.jobApplication.findMany({
+      where,
       include: {
         user: {
           select: {
@@ -42,7 +60,7 @@ export class JobApplicantService {
       omit: { jobId: true, userId: true },
     });
     const appliersCount = await this.prisma.jobApplication.count({
-      where: { job: { postedBy: recruiterId } },
+      where,
     });
     return {
       appliers,
@@ -58,11 +76,7 @@ export class JobApplicantService {
     const skip = (page - 1) * limit;
     const take = limit;
     const where: Prisma.JobApplicationWhereInput = {
-      ...(query.name && {
-        user: {
-          name: { contains: query.name, mode: 'insensitive' },
-        },
-      }),
+      ...this.getWhere(query),
       ...(query.recruiterId && {
         job: {
           postedBy: query.recruiterId,
@@ -110,12 +124,24 @@ export class JobApplicantService {
       where: { AND: [{ id: applicantId }, { jobId }] },
     });
     if (!application) throw new NotFoundException('Application not found');
-    const job = await this.prisma.jobApplication.update({
+    return await this.prisma.jobApplication.update({
       where: { id: application.id },
       data: { status },
     });
+  }
 
-    return await this.findApplicantById(job.id);
+  async updateApplicantStatusBulkByRecruiter(body: UpdateJobApplicationDto) {
+    const applications = await this.prisma.jobApplication.findMany({
+      where: {
+        AND: [{ id: { in: body.applicantIds } }, { jobId: body.jobId }],
+      },
+    });
+    if (!applications) throw new NotFoundException('Job not found');
+    const updatedApplications = await this.prisma.jobApplication.updateMany({
+      where: { id: { in: body.applicantIds } },
+      data: { status: body.status },
+    });
+    return updatedApplications;
   }
 
   async findApplicantById(id: string) {

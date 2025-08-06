@@ -8,7 +8,6 @@ import { UpdateJobDto } from './dto/update-job.dto';
 @Injectable()
 export class JobService {
   constructor(private prisma: PrismaService) {}
-
   async createJob(data: CreateJobDto, userId: string) {
     const companyByRecruiterProfile =
       await this.prisma.recruiterProfile.findUniqueOrThrow({
