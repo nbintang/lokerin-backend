@@ -101,8 +101,12 @@ export class JobApplicantController {
   @Roles(UserRole.ADMINISTRATOR, UserRole.RECRUITER)
   @UseGuards(RoleGuard, EmailVerifiedGuard)
   @Patch('applicants')
-  async updateApplicantStatusBulk(@Body() body: UpdateJobApplicationDto) {
+  async updateApplicantStatusBulk(
+    @Query('jobId') jobId: string,
+    @Body() body: UpdateJobApplicationDto,
+  ) {
     return await this.jobApplicationService.updateApplicantStatusBulkByRecruiter(
+      jobId,
       body,
     );
   }

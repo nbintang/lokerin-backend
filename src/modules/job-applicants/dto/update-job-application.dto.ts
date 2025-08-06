@@ -12,7 +12,4 @@ export class UpdateJobApplicationDto extends PartialType(
   @IsArray()
   @IsUUID('all', { each: true })
   applicantIds: string[];
-
-  @IsUUID()
-  jobId: string;
 }

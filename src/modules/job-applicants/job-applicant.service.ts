@@ -130,10 +130,13 @@ export class JobApplicantService {
     });
   }
 
-  async updateApplicantStatusBulkByRecruiter(body: UpdateJobApplicationDto) {
+  async updateApplicantStatusBulkByRecruiter(
+    jobId: string,
+    body: UpdateJobApplicationDto,
+  ) {
     const applications = await this.prisma.jobApplication.findMany({
       where: {
-        AND: [{ id: { in: body.applicantIds } }, { jobId: body.jobId }],
+        AND: [{ id: { in: body.applicantIds } }, { jobId }],
       },
     });
     if (!applications) throw new NotFoundException('Job not found');
