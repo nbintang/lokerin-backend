@@ -4,7 +4,7 @@ import { JobApplicationStatus } from './enum/job-application.enum';
 import { QueryJobApplicationDto } from './dto/query-job-application.dto';
 import { Prisma } from '@prisma/client';
 import { UserRole } from '../users/enum/user.enum';
-import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
+import { UpdateJobBulkApplicationDto } from './dto/update-job-application.dto';
 
 @Injectable()
 export class JobApplicantService {
@@ -132,7 +132,7 @@ export class JobApplicantService {
 
   async updateApplicantStatusBulkByRecruiter(
     jobId: string,
-    body: UpdateJobApplicationDto,
+    body: UpdateJobBulkApplicationDto,
   ) {
     const applications = await this.prisma.jobApplication.findMany({
       where: {
@@ -144,7 +144,10 @@ export class JobApplicantService {
       where: { id: { in: body.applicantIds } },
       data: { status: body.status },
     });
-    return updatedApplications;
+    return {
+      message: 'Successfully updated applications status',
+      updated: updatedApplications.count,
+    };
   }
 
   async findApplicantById(id: string) {

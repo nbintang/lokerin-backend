@@ -3,7 +3,11 @@ import { CreateJobApplicationStatusDto } from './create-job-application.dto';
 import { JobApplicationStatus } from '../enum/job-application.enum';
 import { ArrayNotEmpty, IsArray, IsEnum, IsUUID } from 'class-validator';
 
-export class UpdateJobApplicationDto extends PartialType(
+export class UpdateSingleApplicantDto {
+  @IsEnum(JobApplicationStatus)
+  status: JobApplicationStatus;
+}
+export class UpdateJobBulkApplicationDto extends PartialType(
   CreateJobApplicationStatusDto,
 ) {
   @IsEnum(JobApplicationStatus)

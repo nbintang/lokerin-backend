@@ -19,7 +19,10 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { Request } from 'express';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
 import { QueryJobApplicationDto } from './dto/query-job-application.dto';
-import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
+import {
+  UpdateJobBulkApplicationDto,
+  UpdateSingleApplicantDto,
+} from './dto/update-job-application.dto';
 
 @UseGuards(AccessTokenGuard)
 @Controller('job-applicants')
@@ -90,7 +93,7 @@ export class JobApplicantController {
   async updateApplicantStatus(
     @Param('id') applicantId: string,
     @Query('jobId') jobId: string,
-    @Body() body: UpdateJobApplicationDto,
+    @Body() body: UpdateSingleApplicantDto,
   ) {
     return await this.jobApplicationService.updateApplicantStatusByRecruiter(
       applicantId,
@@ -103,7 +106,7 @@ export class JobApplicantController {
   @Patch('applicants')
   async updateApplicantStatusBulk(
     @Query('jobId') jobId: string,
-    @Body() body: UpdateJobApplicationDto,
+    @Body() body: UpdateJobBulkApplicationDto,
   ) {
     return await this.jobApplicationService.updateApplicantStatusBulkByRecruiter(
       jobId,
