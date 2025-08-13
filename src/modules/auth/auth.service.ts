@@ -80,7 +80,7 @@ export class AuthService {
     };
   }
 
-  private async confirmUserEmail(email: string) {
+  async confirmUserEmail(email: string) {
     const user = await this.usersService.findUserByEmail(email);
     if (user.isVerified) throw new BadRequestException('User already verified');
     return await this.usersService.verifiedUser(user.id);
